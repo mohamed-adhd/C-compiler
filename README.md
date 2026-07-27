@@ -1,3 +1,6 @@
 # C-compiler
-simple c compiler 
-this repo is queued after the bytecarve repo
+c compiler attempt
+
+this repo is queued after the following repos : 
+bytecarve
+ospf repo
