@@ -56,9 +56,28 @@ token next_token(lexer *l) {
         temp.val=(int)tempo;
         temp.txt=&s;
         return temp;
+    }else {
+        char word;
+        int t=l->position+1;
+        while (l->source[t]!=' ') {
+            word+=l->source[t];
+            t++;
+        }
+        switch (word) {
+            case 'return':
+                temp.type=TOKEN_RETURN;
+                break;
+            case 'int':
+                temp.type=TOKEN_INT;
+                break;
+            default:
+                temp.type=TOKEN_IDENTIFIER;
+                break;
 
-
+        }
+        
     }
+
 }
 token *tokenize(lexer *l, int *count);
 void free_tokens(token *tokens);
