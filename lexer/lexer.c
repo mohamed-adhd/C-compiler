@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include <ctype.h>
+#include <string.h>
 
 
 void lexer_init(lexer* l, const char* source){
@@ -43,7 +44,6 @@ token next_token(lexer *l) {
                 temp.type=TOKEN_RPAREN;
                 break;
         }
-        temp.txt=&s;
         return temp;
     }else if (isdigit(s)) {
         char tempo;
@@ -57,27 +57,26 @@ token next_token(lexer *l) {
         temp.txt=&s;
         return temp;
     }else {
-        char word;
+        char word[64];
+        int i=0;
         int t=l->position+1;
         while (l->source[t]!=' ') {
-            word+=l->source[t];
+            word[i]+=l->source[t];
             t++;
+            i++;
         }
-        switch (word) {
-            case 'return':
-                temp.type=TOKEN_RETURN;
-                break;
-            case 'int':
-                temp.type=TOKEN_INT;
-                break;
-            default:
-                temp.type=TOKEN_IDENTIFIER;
-                break;
-
+        if(strcmp(word,"return")) {
+            temp.type=TOKEN_RETURN;
         }
-        
+        else if(strcmp(word,"int")) {
+            temp.type=TOKEN_INT;
+        }
+        else{
+            temp.type=TOKEN_IDENTIFIER;
+        }
+        return temp;
     }
-
+    l->position++;
 }
 token *tokenize(lexer *l, int *count);
 void free_tokens(token *tokens);
