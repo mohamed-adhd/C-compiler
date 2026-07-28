@@ -1,4 +1,5 @@
 #include "token.h"
+#include <cstddef>
 
 typedef enum{
     NODE_PROGRAM,
@@ -6,6 +7,17 @@ typedef enum{
     NODE_RETURN,
     NODE_CONSTANT
 }nodetp;
+
+
+typedef struct
+{
+    const char *source;
+    size_t position;
+    size_t line;
+    size_t column;
+}Lexer;
+
+
 typedef struct astnode astnode; 
 struct astnode {
     nodetp type;
@@ -15,7 +27,6 @@ struct astnode {
     int value;        
     astnode *function;
 };
-
 typedef struct{
     token *tokens;
     int pos;
@@ -23,7 +34,7 @@ typedef struct{
 }paarser;
 
 
-void parser_init(parser *p, token *tokens, int count);
+void parser_init(paarser *p, token *tokens, int count);
 astnode *parse_program(paarser *p);
 astnode *parse_function(paarser *p);
 astnode *parse_statement(paarser *p);
