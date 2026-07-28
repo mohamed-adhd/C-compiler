@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include <ctype.h>
 
 
 void lexer_init(lexer* l, const char* source){
@@ -41,10 +42,22 @@ token next_token(lexer *l) {
             case '}':
                 temp.type=TOKEN_RPAREN;
                 break;
-
         }
         temp.txt=&s;
         return temp;
+    }else if (isdigit(s)) {
+        char tempo;
+        int t=l->position+1;
+        while (isdigit(l->source[t])) {
+            tempo+=l->source[t];
+            t++;
+        }
+        temp.type=TOKEN_NUMBER;
+        temp.val=(int)tempo;
+        temp.txt=&s;
+        return temp;
+
+
     }
 }
 token *tokenize(lexer *l, int *count);
