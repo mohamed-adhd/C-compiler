@@ -21,6 +21,31 @@ void skip_whitespace(lexer *l) {
     }
 
 }
-token next_token(lexer *l);
+token next_token(lexer *l) {
+    token temp;
+    char s=l->source[l->position];
+    if (s==';'||s=='('||s==')'||s=='{'||s=='}') {
+        switch (s) {
+            case ';':
+                temp.type=TOKEN_SEMICOLON;
+                break;
+            case '(':
+                temp.type=TOKEN_LBRACE;
+                break;
+            case ')':
+                temp.type=TOKEN_RBRACE;
+                break;
+            case '{':
+                temp.type=TOKEN_LPAREN;
+                break;
+            case '}':
+                temp.type=TOKEN_RPAREN;
+                break;
+
+        }
+        temp.txt=&s;
+        return temp;
+    }
+}
 token *tokenize(lexer *l, int *count);
 void free_tokens(token *tokens);
