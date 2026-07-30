@@ -7,9 +7,12 @@ void parser_init(paarser *p, token *tokens, int count) {
     p->tokens = tokens;
     p->pos = 0;
 }
+astnode *parse_program(paarser *p) {
+    astnode temp;
+    temp.type=NODE_PROGRAM;
+    temp.function=parse_function(p);
 
-
-astnode *parse_program(paarser *p);
+}
 astnode *parse_function(paarser *p) {
     astnode temp;
     temp.type=NODE_FUNCTION;
