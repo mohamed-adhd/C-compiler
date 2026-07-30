@@ -1,7 +1,7 @@
 #include "parse.h"
+#include <fstream>
 
-
-astnode *parse_program(paarser *p);
-astnode *parse_function(paarser *p);
-astnode *parse_statement(paarser *p);
-astnode *parse_expression(paarser *p);
+void codegen_program(astnode *program, FILE *out);
+void codegen_function(astnode *function, FILE *out);
+void codegen_statement(astnode *stmt, FILE *out);
+char *codegen_expression(astnode *expr, FILE *out); 
