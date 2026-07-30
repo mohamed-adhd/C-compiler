@@ -88,5 +88,6 @@ token *tokenizer(lexer *l, int *count) {
         i++;
     }
 }
-
-void free_tokens(token *tokens);
+void free_tokens(token *tokens) {
+    free(tokens);
+}

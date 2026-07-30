@@ -13,5 +13,5 @@ char peek(lexer *l);
 char advance(lexer *l);
 void skip_whitespace(lexer *l);
 token next_token(lexer *l);
-token *tokenize(lexer *l, int *count);
+token *tokenizer(lexer *l, int *count);
 void free_tokens(token *tokens);
