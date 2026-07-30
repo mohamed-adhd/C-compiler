@@ -10,7 +10,17 @@ void parser_init(paarser *p, token *tokens, int count) {
 
 
 astnode *parse_program(paarser *p);
-astnode *parse_function(paarser *p);
+astnode *parse_function(paarser *p) {
+    astnode temp;
+    temp.type=NODE_FUNCTION;
+    temp.name=p->tokens[p->pos].txt;
+    while(p->tokens[p->pos].type!=TOKEN_LPAREN) {
+        p->pos++;
+    }
+    p->pos++;
+    temp.body=parse_statement(p);
+    return &temp;
+}
 astnode *parse_statement(paarser *p) {
     p->pos++;
     astnode temp;
