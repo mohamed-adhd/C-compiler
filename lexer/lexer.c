@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 
 
@@ -74,9 +75,18 @@ token next_token(lexer *l) {
         else{
             temp.type=TOKEN_IDENTIFIER;
         }
-        return temp;
     }
     l->position++;
+    return temp;
 }
-token *tokenize(lexer *l, int *count);
+token *tokenizer(lexer *l, int *count) {
+    token* temp;
+    temp=malloc(*count*sizeof(token));
+    int i=0;
+    while (l->position<strlen(l->source)) {
+        temp[i]=next_token(l);
+        i++;
+    }
+}
+
 void free_tokens(token *tokens);
