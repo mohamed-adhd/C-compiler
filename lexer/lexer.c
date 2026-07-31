@@ -27,7 +27,7 @@ void skip_whitespace(lexer *l) {
 token next_token(lexer *l) {
     token temp;
     char s=l->source[l->position];
-    if (s==';'||s=='('||s==')'||s=='{'||s=='}') {
+    if (s==';'||s=='('||s==')'||s=='{'||s=='}'||s=='+'||s=='-'||s=='*'||s=='/') {
         switch (s) {
             case ';':
                 temp.type=TOKEN_SEMICOLON;
@@ -43,6 +43,18 @@ token next_token(lexer *l) {
                 break;
             case '}':
                 temp.type=TOKEN_RPAREN;
+                break;
+            case '+':
+                temp.type=TOKEN_ADD;
+                break;
+            case '-':
+                temp.type=TOKEN_SUB;
+                break;
+            case '*':
+                temp.type=TOKEN_MUL;
+                break;
+            case '/':
+                temp.type=TOKEN_DIV;
                 break;
         }
         return temp;
