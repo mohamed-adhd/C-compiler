@@ -1,5 +1,10 @@
 typedef enum{
     TOKEN_INT,
+    TOKEN_ADD,
+    TOKEN_SUB,
+    TOKEN_MUL,
+    TOKEN_DIV,
+    TOKEN_COUT,
     TOKEN_RETURN,
     TOKEN_IDENTIFIER,
     TOKEN_NUMBER,
