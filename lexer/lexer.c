@@ -56,6 +56,16 @@ token next_token(lexer *l) {
             case '/':
                 temp.type=TOKEN_DIV;
                 break;
+            case ',':
+                temp.type=TOKEN_ver;
+                break;
+            case '%':
+                temp.type=TOKEN_MOD;
+                break;
+            case '"':
+                temp.type=TOKEN_COL;
+                break;
+
         }
         return temp;
     }else if (isdigit(s)) {
@@ -83,6 +93,8 @@ token next_token(lexer *l) {
         }
         else if(strcmp(word,"int")) {
             temp.type=TOKEN_INT;
+        }else if(strcmp(word,"print")) {
+            temp.type=TOKEN_COUT;
         }
         else{
             temp.type=TOKEN_IDENTIFIER;

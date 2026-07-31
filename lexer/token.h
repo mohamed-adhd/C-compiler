@@ -13,6 +13,9 @@ typedef enum{
     TOKEN_LBRACE,   
     TOKEN_RBRACE,   
     TOKEN_SEMICOLON,
+    TOKEN_ver,
+    TOKEN_MOD,
+    TOKEN_COL,
     TOKEN_EOF
 }tokentype;
 
