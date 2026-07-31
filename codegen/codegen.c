@@ -1,7 +1,10 @@
 #include "codegen.h"
 #include <fstream>
 
-void codegen_program(astnode *program, FILE *out);
+void codegen_program(astnode *program, FILE *out) {
+    codegen_function(program->function, out);
+    //it will staty like this just for a while 
+}
 void codegen_function(astnode *function, FILE *out) {
     fprintf(out, "globl %s :\n%s", function->name, function->name);
     codegen_statement(function->body, out);
