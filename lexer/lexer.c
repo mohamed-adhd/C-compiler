@@ -22,7 +22,6 @@ void skip_whitespace(lexer *l) {
     while (l->source[l->position]==' ') {
         l->position++;
     }
-
 }
 token next_token(lexer *l) {
     token temp;
@@ -65,10 +64,9 @@ token next_token(lexer *l) {
             case '"':
                 temp.type=TOKEN_COL;
                 break;
-
         }
         return temp;
-    }else if (isdigit(s)) {
+    }else if (isdigit(s)){
         char tempo;
         int t=l->position+1;
         while (isdigit(l->source[t])) {
@@ -93,7 +91,8 @@ token next_token(lexer *l) {
         }
         else if(strcmp(word,"int")) {
             temp.type=TOKEN_INT;
-        }else if(strcmp(word,"print")) {
+        }
+        else if(strcmp(word,"print")) {
             temp.type=TOKEN_COUT;
         }
         else{
