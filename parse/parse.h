@@ -6,6 +6,7 @@ typedef enum{
     NODE_FUNCTION,
     NODE_RETURN,
     NODE_CONSTANT,
+    NODE_PRINT,
     NODE_ADD,
     NODE_SUB,
     NODE_MUL,

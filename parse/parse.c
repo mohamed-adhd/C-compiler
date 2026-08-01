@@ -56,16 +56,14 @@ astnode *parse_factor(paarser *p) {
         p->pos++;
         return node;
     }
-    fprintf(stderr, "Expected a number\n");
+    fprintf(stderr, "Expected a number nigga \n");
     free(node);
     return NULL;
 }
 
 astnode *parse_term(paarser *p) {
     astnode *left = parse_factor(p);
-    while (p->tokens[p->pos].type == TOKEN_MUL ||
-           p->tokens[p->pos].type == TOKEN_DIV ||
-           p->tokens[p->pos].type == TOKEN_MOD) {
+    while (p->tokens[p->pos].type == TOKEN_MUL ||p->tokens[p->pos].type == TOKEN_MOD) {
         tokentype op = p->tokens[p->pos].type;
         p->pos++;
         astnode *right = parse_factor(p);
