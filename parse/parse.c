@@ -11,7 +11,7 @@ astnode *parse_program(paarser *p) {
     astnode temp;
     temp.type=NODE_PROGRAM;
     temp.function=parse_function(p);
-
+    return &temp;
 }
 astnode *parse_function(paarser *p) {
     astnode temp;
@@ -20,7 +20,6 @@ astnode *parse_function(paarser *p) {
     while(p->tokens[p->pos].type!=TOKEN_LPAREN) {
         p->pos++;
     }
-    p->pos++;
     temp.body=parse_statement(p);
     return &temp;
 }
@@ -33,9 +32,23 @@ astnode *parse_statement(paarser *p) {
 }
 astnode *parse_expression(paarser *p) {
     astnode temp;
-    if (isdigit(p->tokens[p->pos].val)){
-        temp.type=NODE_CONSTANT;
-        temp.value=p->tokens[p->pos].val;
+    int op;
+    for (int s;s<p->count; s++) {
+        if (p->tokens[s].type==TOKEN_ADD) {
+            op=1;
+        }else if (p->tokens[s].type==TOKEN_SUB) {
+            op=2;
+        }else if (p->tokens[s].type==TOKEN_DIV) {
+            op=3;
+        }else if (p->tokens[s].type==TOKEN_MUL) {
+            op=4;
+        }else if (p->tokens[s].type==TOKEN_MOD) {
+            op=5;
+        }
     }
-    return &temp;
+    switch (op) {
+        case 1:
+
+    }
+
 }

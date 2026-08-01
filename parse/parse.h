@@ -3,7 +3,12 @@ typedef enum{
     NODE_PROGRAM,
     NODE_FUNCTION,
     NODE_RETURN,
-    NODE_CONSTANT
+    NODE_CONSTANT,
+    NODE_ADD,
+    NODE_SUB,
+    NODE_MUL,
+    NODE_DIV,
+    NODE_MOD,
 }nodetp;
 
 
