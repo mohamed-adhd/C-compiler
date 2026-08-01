@@ -1,5 +1,6 @@
 #include "codegen.h"
-#include <fstream>
+#include <stdio.h>
+
 
 void codegen_program(astnode *program, FILE *out) {
     codegen_function(program->function, out);

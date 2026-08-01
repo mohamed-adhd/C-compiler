@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include "codegen.h"
 #include "parse.h"
-#include "lexer/lexer.h"
+#include "token.h"
+#include "lexer.h"
 int main(int argc, char *argv[]) {
 
     FILE *file = fopen("example.txt", "r");
