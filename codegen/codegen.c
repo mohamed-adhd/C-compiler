@@ -33,34 +33,38 @@ void codegen_expression(astnode *expr, FILE *out) {
 
 }
 void codegen_print(FILE *out) {
-    fprintf(out, "
-itoa:
-push rbp
-mov rbp,rsp
-mov rcx,10
-.loop:
-xor rdx,rdx
-div rcx
-add dl,'0'
-push rdx
-inc byte [count]
-cmp rax,0
-jne .loop
-mov  al, [count]
-mov  [itoa_len], al
-lea rdi, [itoa_buffer]
-.pop:
-pop rax
-mov [rdi],al
-inc rdi
-dec byte [count]
-jnz .pop
-
-
-
-
-.done :
-leave
-ret
-);
+    const char *ITOA_HELPER =
+    "section .bss\n"
+    "    count: resb 1\n"
+    "    itoa_buffer: resb 12\n"
+    "    itoa_len: resb 1\n"
+    "\n"
+    "section .text\n"
+    "itoa:\n"
+    "    push rbp\n"
+    "    mov rbp, rsp\n"
+    "\n"
+    "    mov byte [count], 0\n"
+    "    mov rcx, 10\n"
+    ".loop:\n"
+    "    xor rdx, rdx\n"
+    "    div rcx\n"
+    "    add dl, '0'\n"
+    "    push rdx\n"
+    "    inc byte [count]\n"
+    "    cmp rax, 0\n"
+    "    jne .loop\n"
+    "\n"
+    "    mov al, [count]\n"
+    "    mov [itoa_len], al\n"
+    "    lea rdi, [itoa_buffer]\n"
+    ".pop:\n"
+    "    pop rax\n"
+    "    mov [rdi], al\n"
+    "    inc rdi\n"
+    "    dec byte [count]\n"
+    "    jnz .pop\n"
+    "\n"
+    "    leave\n"
+    "    ret\n";
 }
