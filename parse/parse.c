@@ -1,6 +1,8 @@
 #include "parse.h"
 
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void parser_init(paarser *p, token *tokens, int count) {
     p->count = count;
@@ -30,25 +32,49 @@ astnode *parse_statement(paarser *p) {
     temp.expr=parse_expression(p);
     return &temp;
 }
+
+astnode *parse_factor(paarser *p) {
+    astnode *node = malloc(sizeof(astnode));
+    if (p->tokens[p->pos].type == TOKEN_NUMBER) {
+        node->type = NODE_CONSTANT;
+        node->value = p->tokens[p->pos].val;
+        p->pos++; // consume the number
+        return node;
+    }
+    fprintf(stderr, "nigga i need a number\n");
+}
+
+astnode *parse_term(paarser *p) {
+    astnode *left = parse_factor(p);
+    while (p->tokens[p->pos].type == TOKEN_MUL ||
+           p->tokens[p->pos].type == TOKEN_DIV ||
+           p->tokens[p->pos].type == TOKEN_MOD) {
+        tokentype op = p->tokens[p->pos].type;
+        p->pos++;
+        astnode *right = parse_factor(p);
+        astnode *newnode = malloc(sizeof(astnode));
+        newnode->type = NODE_BINARY_OP;
+        newnode->op = op;
+        newnode->left = left;
+        newnode->right = right;
+        left = newnode;
+    }
+    return left;
+}
+
 astnode *parse_expression(paarser *p) {
-    astnode temp;
-    int op;
-    for (int s;s<p->count; s++) {
-        if (p->tokens[s].type==TOKEN_ADD) {
-            op=1;
-        }else if (p->tokens[s].type==TOKEN_SUB) {
-            op=2;
-        }else if (p->tokens[s].type==TOKEN_DIV) {
-            op=3;
-        }else if (p->tokens[s].type==TOKEN_MUL) {
-            op=4;
-        }else if (p->tokens[s].type==TOKEN_MOD) {
-            op=5;
-        }
+    astnode *left = parse_term(p);
+    while (p->tokens[p->pos].type == TOKEN_ADD ||
+           p->tokens[p->pos].type == TOKEN_SUB) {
+        tokentype op = p->tokens[p->pos].type;
+        p->pos++;
+        astnode *right = parse_term(p);
+        astnode *newnode = malloc(sizeof(astnode));
+        newnode->type = NODE_BINARY_OP;
+        newnode->op = op;
+        newnode->left = left;
+        newnode->right = right;
+        left = newnode;
     }
-    switch (op) {
-        case 1:
-
-    }
-
+    return left;
 }

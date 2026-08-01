@@ -9,6 +9,7 @@ typedef enum{
     NODE_MUL,
     NODE_DIV,
     NODE_MOD,
+    NODE_BINARY_OP
 }nodetp;
 
 
@@ -17,7 +18,10 @@ struct astnode {
     nodetp type;
     char *name;      
     astnode *body;   
-    astnode *expr;    
+    astnode *expr;
+    astnode *left;
+    astnode *right;
+    tokentype op;
     int value;        
     astnode *function;
 };
