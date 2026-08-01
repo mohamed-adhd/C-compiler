@@ -41,12 +41,23 @@ astnode *parse_function(paarser *p) {
     return node;
 }
 astnode *parse_statement(paarser *p) {
-    astnode *node = new_node(NODE_RETURN);
     if (p->tokens[p->pos].type == TOKEN_RETURN) {
         p->pos++;
+        astnode *node = new_node(NODE_RETURN);
+        node->expr = parse_expression(p);
+        p->pos++;
+        return node;
+    } else if (p->tokens[p->pos].type ==) {
+        p->pos++;
+        p->pos++;
+        astnode *node = new_node(NODE_PRINT);
+        node->expr = parse_expression(p);
+        p->pos++;
+        p->pos++;
+        return node;
     }
-    node->expr=parse_expression(p);
-    return node;
+    fprintf(stderr, "you fucked up.....\n");
+    exit(1);
 }
 
 astnode *parse_factor(paarser *p) {
