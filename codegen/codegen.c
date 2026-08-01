@@ -30,4 +30,37 @@ void codegen_expression(astnode *expr, FILE *out) {
         codegen_print(out);
 
     }
+
+}
+void codegen_print(FILE *out) {
+    fprintf(out, "
+itoa:
+push rbp
+mov rbp,rsp
+mov rcx,10
+.loop:
+xor rdx,rdx
+div rcx
+add dl,'0'
+push rdx
+inc byte [count]
+cmp rax,0
+jne .loop
+mov  al, [count]
+mov  [itoa_len], al
+lea rdi, [itoa_buffer]
+.pop:
+pop rax
+mov [rdi],al
+inc rdi
+dec byte [count]
+jnz .pop
+
+
+
+
+.done :
+leave
+ret
+);
 }
