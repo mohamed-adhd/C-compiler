@@ -9,39 +9,56 @@ void parser_init(paarser *p, token *tokens, int count) {
     p->tokens = tokens;
     p->pos = 0;
 }
+
+static astnode *new_node(nodetp type) {
+    astnode *node = calloc(1, sizeof(astnode));
+    if (node != NULL) {
+        node->type = type;
+    }
+    return node;
+}
+
 astnode *parse_program(paarser *p) {
-    astnode temp;
-    temp.type=NODE_PROGRAM;
-    temp.function=parse_function(p);
-    return &temp;
+    astnode *node = new_node(NODE_PROGRAM);
+    node->function=parse_function(p);
+    return node;
 }
 astnode *parse_function(paarser *p) {
-    astnode temp;
-    temp.type=NODE_FUNCTION;
-    temp.name=p->tokens[p->pos].txt;
-    while(p->tokens[p->pos].type!=TOKEN_LPAREN) {
+    astnode *node = new_node(NODE_FUNCTION);
+    while (p->pos + 2 < p->count &&
+           !(p->tokens[p->pos].type == TOKEN_INT &&
+             p->tokens[p->pos + 1].type == TOKEN_IDENTIFIER &&
+             p->tokens[p->pos + 2].type == TOKEN_LPAREN)) {
         p->pos++;
     }
-    temp.body=parse_statement(p);
-    return &temp;
+    if (p->pos + 1 < p->count) {
+        node->name=p->tokens[p->pos + 1].txt;
+    }
+    while(p->pos < p->count && p->tokens[p->pos].type!=TOKEN_RETURN) {
+        p->pos++;
+    }
+    node->body=parse_statement(p);
+    return node;
 }
 astnode *parse_statement(paarser *p) {
-    p->pos++;
-    astnode temp;
-    temp.type=NODE_RETURN;
-    temp.expr=parse_expression(p);
-    return &temp;
+    astnode *node = new_node(NODE_RETURN);
+    if (p->tokens[p->pos].type == TOKEN_RETURN) {
+        p->pos++;
+    }
+    node->expr=parse_expression(p);
+    return node;
 }
 
 astnode *parse_factor(paarser *p) {
-    astnode *node = malloc(sizeof(astnode));
+    astnode *node = new_node(NODE_CONSTANT);
     if (p->tokens[p->pos].type == TOKEN_NUMBER) {
-        node->type = NODE_CONSTANT;
         node->value = p->tokens[p->pos].val;
         p->pos++;
         return node;
     }
-    fprintf(stderr, "nigga i need a number\n");
+    fprintf(stderr, "Expected a number\n");
+    free(node);
+    return NULL;
 }
 
 astnode *parse_term(paarser *p) {
@@ -52,7 +69,7 @@ astnode *parse_term(paarser *p) {
         tokentype op = p->tokens[p->pos].type;
         p->pos++;
         astnode *right = parse_factor(p);
-        astnode *newnode = malloc(sizeof(astnode));
+        astnode *newnode = new_node(NODE_BINARY_OP);
         newnode->type = NODE_BINARY_OP;
         newnode->op = op;
         newnode->left = left;
@@ -68,7 +85,7 @@ astnode *parse_expression(paarser *p) {
         tokentype op = p->tokens[p->pos].type;
         p->pos++;
         astnode *right = parse_term(p);
-        astnode *newnode = malloc(sizeof(astnode));
+        astnode *newnode = new_node(NODE_BINARY_OP);
         newnode->type = NODE_BINARY_OP;
         newnode->op = op;
         newnode->left = left;

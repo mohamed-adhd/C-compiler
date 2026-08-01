@@ -7,7 +7,7 @@ void codegen_program(astnode *program, FILE *out) {
     //it will staty like this just for a while
 }
 void codegen_function(astnode *function, FILE *out) {
-    fprintf(out, "globl %s :\n%s", function->name, function->name);
+    fprintf(out, ".globl %s\n%s:\n", function->name, function->name);
     codegen_statement(function->body, out);
 }
 void codegen_statement(astnode *stmt, FILE *out) {

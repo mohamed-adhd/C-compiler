@@ -1,15 +1,22 @@
-#include <c++/16.1.1/cstdio>
 #include <stdio.h>
 #include <stdlib.h>
 #include "codegen.h"
 #include "parse.h"
 #include "token.h"
 #include "lexer.h"
+
+#include <stddef.h>
+
 int main(int argc, char *argv[]) {
 
-    FILE *file = fopen("example.txt", "r");
-    if (file == NULL) {
-        printf("Can't open shi\n");
+    const char *path = argc > 1 ? argv[1] : "../tests/test1.c";
+    FILE *file = fopen(path, "r");
+    if (file == NULL && argc == 1) {
+        path = "tests/test1.c";
+        file = fopen(path, "r");
+    }
+    if (file ==NULL) {
+        printf("Can't open %s\n", path);
         return 1;
     }
     fseek(file, 0, SEEK_END);
@@ -21,20 +28,15 @@ int main(int argc, char *argv[]) {
     fclose(file);
     lexer lex_luther;
     lexer_init(&lex_luther,content);
-    token *tkr = malloc(size + 1);
-    token temp =next_token(&lex_luther);
-    int i=1;
-    while (temp.type!=TOKEN_EOF) {
-        temp =next_token(&lex_luther);
-        tkr[i] = temp;
-    }
+    int token_count = 0;
+    token *tkr = tokenizer(&lex_luther, &token_count);
     paarser psr;
-    parser_init(&psr,tkr,size);
+    parser_init(&psr,tkr,token_count);
     astnode *ast = parse_program(&psr);
     FILE *out = fopen("output.s", "w");
     codegen_program(ast, out);
     fclose(out);
-
-
+    free_tokens(tkr);
+    free(content);
     return 0;
 }

@@ -1,4 +1,6 @@
-#include "lexer/lexer.h"
+#ifndef PARSE_H
+#define PARSE_H
+#include "token.h"
 typedef enum{
     NODE_PROGRAM,
     NODE_FUNCTION,
@@ -37,3 +39,4 @@ astnode *parse_program(paarser *p);
 astnode *parse_function(paarser *p);
 astnode *parse_statement(paarser *p);
 astnode *parse_expression(paarser *p);
+#endif

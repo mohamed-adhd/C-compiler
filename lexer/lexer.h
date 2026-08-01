@@ -1,5 +1,7 @@
-#include "stddef.h"
+#ifndef LEXER_H
+#define LEXER_H
 #include "token.h"
+#include <stddef.h>
 typedef struct
 {
     const char *source;
@@ -15,3 +17,4 @@ void skip_whitespace(lexer *l);
 token next_token(lexer *l);
 token *tokenizer(lexer *l, int *count);
 void free_tokens(token *tokens);
+#endif

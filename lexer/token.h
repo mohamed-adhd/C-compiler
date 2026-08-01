@@ -1,3 +1,5 @@
+#ifndef TOKEN_H
+#define TOKEN_H
 typedef enum{
     TOKEN_INT,
     TOKEN_ADD,
@@ -25,3 +27,4 @@ typedef struct{
     char *txt;
     int val;
 }token;
+#endif

@@ -27,5 +27,4 @@ add_executable(C_compiler
         util/errors.h
         util/util.c
         util/util.h
-        main.c
-        tests/test1.c)
+        main.c)
