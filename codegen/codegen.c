@@ -14,10 +14,10 @@ void codegen_statement(astnode *stmt, FILE *out) {
     codegen_expression(stmt->expr,out);
     fprintf(out, "ret\n");
 }
+//fuck that bitch , fuck this compiler, fuck c , fuck assembly , and fuck this god damn heat
 void codegen_expression(astnode *expr, FILE *out) {
     if (expr->type == NODE_CONSTANT) {
         fprintf(out, "movl $%d, %%eax\n", expr->value);
-
     } else if (expr->type == NODE_BINARY_OP) {
         codegen_expression(expr->left, out);
         fprintf(out, "push %%eax\n");
