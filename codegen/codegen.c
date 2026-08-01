@@ -14,6 +14,9 @@ void codegen_statement(astnode *stmt, FILE *out) {
     codegen_expression(stmt->expr,out);
     fprintf(out, "ret\n");
 }
-char *codegen_expression(astnode *expr, FILE *out) {
-    fprintf(out, "movl $%d, %%eax\n", expr->value);
+char *codegen_expression(astnode *stmt, FILE *out) {
+    codegen_expression(stmt->left, out);
+    fprintf(out, "push %%eax\n");
+    codegen_expression(stmt->right, out);
+    fprintf(out, "pop %%ecx\n");
 }

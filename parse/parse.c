@@ -38,7 +38,7 @@ astnode *parse_factor(paarser *p) {
     if (p->tokens[p->pos].type == TOKEN_NUMBER) {
         node->type = NODE_CONSTANT;
         node->value = p->tokens[p->pos].val;
-        p->pos++; // consume the number
+        p->pos++;
         return node;
     }
     fprintf(stderr, "nigga i need a number\n");
@@ -64,8 +64,7 @@ astnode *parse_term(paarser *p) {
 
 astnode *parse_expression(paarser *p) {
     astnode *left = parse_term(p);
-    while (p->tokens[p->pos].type == TOKEN_ADD ||
-           p->tokens[p->pos].type == TOKEN_SUB) {
+    while (p->tokens[p->pos].type == TOKEN_ADD ||p->tokens[p->pos].type == TOKEN_SUB) {
         tokentype op = p->tokens[p->pos].type;
         p->pos++;
         astnode *right = parse_term(p);
