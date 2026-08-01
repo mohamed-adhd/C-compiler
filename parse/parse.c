@@ -47,7 +47,7 @@ astnode *parse_statement(paarser *p) {
         node->expr = parse_expression(p);
         p->pos++;
         return node;
-    } else if (p->tokens[p->pos].type ==) {
+    } else if (p->tokens[p->pos].type ==TOKEN_PRINT) {
         p->pos++;
         p->pos++;
         astnode *node = new_node(NODE_PRINT);

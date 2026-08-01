@@ -18,6 +18,7 @@ typedef enum{
     TOKEN_ver,
     TOKEN_MOD,
     TOKEN_COL,
+    TOKEN_PRINT,
     TOKEN_EOF
 }tokentype;
 

@@ -25,5 +25,9 @@ void codegen_expression(astnode *expr, FILE *out) {
         fprintf(out, "pop %%ecx\n");
         if (expr->op == TOKEN_ADD) fprintf(out, "addl %%ecx, %%eax\n");
         if (expr->op == TOKEN_SUB) fprintf(out, "subl %%ecx, %%eax\n");
+    }else if (expr->type == NODE_PRINT) {
+        codegen_expression(expr->expr, out);
+        codegen_print(out);
+
     }
 }
