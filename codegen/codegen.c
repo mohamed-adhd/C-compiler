@@ -49,6 +49,8 @@ void codegen_statement(astnode *stmt, FILE *out) {
     if (stmt->type == NODE_PRINT) {
         codegen_expression(stmt->expr, out);
         codegen_print(out,stmt->value);
+        fprintf(out, "ret\n");
+        return;
     }
     codegen_expression(stmt->expr,out);
     fprintf(out, "ret\n");

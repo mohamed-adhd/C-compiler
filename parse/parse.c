@@ -34,7 +34,10 @@ astnode *parse_function(paarser *p) {
     if (p->pos + 1 < p->count) {
         node->name=p->tokens[p->pos + 1].txt;
     }
-    while(p->pos < p->count && p->tokens[p->pos].type!=TOKEN_RETURN) {
+    while (p->pos < p->count && p->tokens[p->pos].type != TOKEN_LBRACE) {
+        p->pos++;
+    }
+    if (p->tokens[p->pos].type == TOKEN_LBRACE) {
         p->pos++;
     }
     node->body=parse_statement(p);
@@ -45,15 +48,28 @@ astnode *parse_statement(paarser *p) {
         p->pos++;
         astnode *node = new_node(NODE_RETURN);
         node->expr = parse_expression(p);
-        p->pos++;
+        if (p->tokens[p->pos].type == TOKEN_SEMICOLON) {
+            p->pos++;
+        }
         return node;
-    } else if (p->tokens[p->pos].type ==TOKEN_PRINT) {
-        p->pos++;
-        p->pos++;
+    }
+    if (p->tokens[p->pos].type ==TOKEN_PRINT) {
         astnode *node = new_node(NODE_PRINT);
+        p->pos++;
+        if (p->tokens[p->pos].type != TOKEN_LPAREN) {
+            fprintf(stderr, "Expected '(' after print\n");
+            exit(1);
+        }
+        p->pos++;
         node->expr = parse_expression(p);
+        if (p->tokens[p->pos].type != TOKEN_RPAREN) {
+            fprintf(stderr, "Expected ')' after print expression\n");
+            exit(1);
+        }
         p->pos++;
-        p->pos++;
+        if (p->tokens[p->pos].type == TOKEN_SEMICOLON) {
+            p->pos++;
+        }
         return node;
     }
     fprintf(stderr, "you fucked up.....\n");
@@ -69,7 +85,7 @@ astnode *parse_factor(paarser *p) {
     }
     fprintf(stderr, "Expected a number nigga \n");
     free(node);
-    return NULL;
+    exit(1);
 }
 
 astnode *parse_term(paarser *p) {
