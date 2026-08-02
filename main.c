@@ -38,5 +38,12 @@ int main(int argc, char *argv[]) {
     fclose(out);
     free_tokens(tkr);
     free(content);
+    const char *a= "mov rax, 60\n"
+    "mov rdi, 0\n"
+    "syscall\n";
+    fprintf(out, "%s",a);
+    system("nasm -f elf64 output.s -o output.o");
+    system("ld output.o -o output");
     return 0;
+
 }
