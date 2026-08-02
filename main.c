@@ -35,13 +35,15 @@ int main(int argc, char *argv[]) {
     astnode *ast = parse_program(&psr);
     FILE *out = fopen("output.s", "w");
     codegen_program(ast, out);
-    fclose(out);
-    free_tokens(tkr);
-    free(content);
+
+
     const char *a= "mov rax, 60\n"
     "mov rdi, 0\n"
     "syscall\n";
     fprintf(out, "%s",a);
+    fclose(out);
+    free_tokens(tkr);
+    free(content);
     system("nasm -f elf64 output.s -o output.o");
     system("ld output.o -o output");
     return 0;
