@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[]) {
 
-    const char *path = argc > 1 ? argv[1] : "../tests/test1.c";
+    const char *path = argc > 1 ? argv[1] : "../tests/test2.c";
     FILE *file = fopen(path, "r");
     if (file == NULL && argc == 1) {
         path = "tests/test1.c";

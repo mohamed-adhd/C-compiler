@@ -65,12 +65,11 @@ void codegen_expression(astnode *expr, FILE *out) {
         if (expr->op == TOKEN_ADD) fprintf(out, "addl %%ecx, %%eax\n");
         if (expr->op == TOKEN_SUB) fprintf(out, "subl %%ecx, %%eax\n");
     }
-
 }
 void codegen_print(FILE *out,int val) {
     fprintf(out, "call itoa\n") ;
-    const char *s="mov rax,1;\n"
-                "mov rdi,1;\n"
+    const char *s="mov rax,1\n"
+                "mov rdi,1\n"
                 "lea rsi,[itoa_buffer]\n"
                 "movzx rdx,byte [itoa_len]\n"
                 "syscall\n";
