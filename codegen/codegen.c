@@ -46,6 +46,10 @@ void codegen_function(astnode *function, FILE *out) {
     codegen_statement(function->body, out);
 }
 void codegen_statement(astnode *stmt, FILE *out) {
+    if (stmt->type == NODE_PRINT) {
+        codegen_expression(stmt->expr, out);
+        codegen_print(out,stmt->value);
+    }
     codegen_expression(stmt->expr,out);
     fprintf(out, "ret\n");
 }
@@ -60,17 +64,12 @@ void codegen_expression(astnode *expr, FILE *out) {
         fprintf(out, "pop %%ecx\n");
         if (expr->op == TOKEN_ADD) fprintf(out, "addl %%ecx, %%eax\n");
         if (expr->op == TOKEN_SUB) fprintf(out, "subl %%ecx, %%eax\n");
-    }else if (expr->type == NODE_PRINT) {
-        codegen_expression(expr->expr, out);
-        codegen_print(out,expr->value);
-
     }
 
 }
 void codegen_print(FILE *out,int val) {
-
-    fprintf(out, "mov rax, %d\n",val) ;
     fprintf(out, "call itoa\n") ;
+    
 
 
 
