@@ -69,7 +69,13 @@ void codegen_expression(astnode *expr, FILE *out) {
 }
 void codegen_print(FILE *out,int val) {
     fprintf(out, "call itoa\n") ;
-    
+    const char *s="mov rax,1;\n"
+                "mov rdi,1;\n"
+                "lea rsi,[itoa_buffer]\n"
+                "movzx rdx,byte [itoa_len]\n"
+                "syscall\n";
+    fprintf(out,"%s", s);
+
 
 
 
