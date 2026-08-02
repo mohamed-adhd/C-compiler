@@ -31,17 +31,19 @@ itoa:
 
     leave
     ret
-.globl main
-main:
-movl $5, %eax
-push %eax
-movl $4, %eax
-pop %ecx
-addl %ecx, %eax
+global _start
+_start:
+mov rax, 5
+push rax
+mov rax, 4
+pop rcx
+add rax, rcx
 call itoa
 mov rax,1
 mov rdi,1
 lea rsi,[itoa_buffer]
 movzx rdx,byte [itoa_len]
 syscall
-ret
+mov rax, 60
+mov rdi, 0
+syscall

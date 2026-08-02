@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
     free(content);
     system("nasm -f elf64 output.s -o output.o");
     system("ld output.o -o output");
+    system("./output");
     return 0;
 
 }
