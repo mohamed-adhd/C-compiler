@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     fclose(out);
     free_tokens(tkr);
     free(content);
-    system("nasm -f elf64 output.s -o output.o");
+    system("nasm -f bin output.s -o output.bin");
     system("ld output.o -o output");
     system("./output");
     return 0;
