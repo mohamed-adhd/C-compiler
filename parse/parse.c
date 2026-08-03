@@ -26,7 +26,7 @@ astnode *parse_program(paarser *p) {
 astnode *parse_function(paarser *p) {
     astnode *node = new_node(NODE_FUNCTION);
     while (p->pos + 2 < p->count &&
-           !(p->tokens[p->pos].type == TOKEN_INT &&
+           !((p->tokens[p->pos].type == TOKEN_INT||p->tokens[p->pos].type == TOKEN_VOID) &&
              p->tokens[p->pos + 1].type == TOKEN_IDENTIFIER &&
              p->tokens[p->pos + 2].type == TOKEN_LPAREN)) {
         p->pos++;

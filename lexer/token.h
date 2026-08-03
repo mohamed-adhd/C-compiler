@@ -3,6 +3,7 @@
 typedef enum{
     TOKEN_INT,
     TOKEN_ADD,
+    TOKEN_VOID,
     TOKEN_SUB,
     TOKEN_MUL,
     TOKEN_DIV,

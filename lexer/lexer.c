@@ -127,6 +127,9 @@ token next_token(lexer *l) {
         else if(word != NULL && strcmp(word,"print") == 0) {
             temp.type=TOKEN_PRINT;
         }
+        else if(word != NULL && strcmp(word,"void") == 0) {
+            temp.type=TOKEN_VOID;
+        }
         else{
             temp.type=TOKEN_IDENTIFIER;
         }

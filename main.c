@@ -35,8 +35,6 @@ int main(int argc, char *argv[]) {
     astnode *ast = parse_program(&psr);
     FILE *out = fopen("output.s", "w");
     codegen_program(ast, out);
-
-
     const char *a= "mov rax, 60\n"
     "mov rdi, 0\n"
     "syscall\n";

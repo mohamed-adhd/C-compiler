@@ -39,7 +39,6 @@ void codegen_program(astnode *program, FILE *out) {
     "    ret\n";
     fprintf(out,"%s", ITOA_HELPER);
     codegen_function(program->function, out);
-    //it will staty like this just for a while
 }
 void codegen_function(astnode *function, FILE *out) {
     (void)function;
