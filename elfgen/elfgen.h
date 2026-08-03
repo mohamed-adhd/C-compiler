@@ -45,9 +45,14 @@ void generate() {
     offset[23]=0;
     write_u64(offset, 24, 0x400000);
     write_u64(offset, 32,64);
-    write_u64(offset, 40,);
-
-
+    write_u64(offset, 40,0);
+    write_u32(offset, 48, 0);
+    write_u16(offset, 52,64);
+    write_u16(offset, 54, 56);
+    write_u16(offset, 56, 1);
+    write_u16(offset, 58, 0);
+    write_u16(offset, 60, 0);
+    write_u16(offset, 62, 0);
 }
 
 #endif //C_COMPILER_ELFGEN_H
