@@ -53,13 +53,15 @@ void generate() {
     write_u16(offset, 58, 0);
     write_u16(offset, 60, 0);
     write_u16(offset, 62, 0);
-    write_u16(offset, 64, 1);
-    write_u16(offset, 68, 5);
-    write_u32(offset, 72, 120);
+    write_u32(offset, 64, 1);
+    write_u32(offset, 68, 5);
+    write_u64(offset, 72, 120);
     write_u64(offset, 80, 0x400000);
     write_u64(offset, 88, 0x400000);
-    write_u64(offset, 96, 0x0000000000000008);
-    write_u64(offset, 102, 0x0000000000000008);
+    write_u64(offset, 96, FILESZ);
+    write_u64(offset, 104, FILESZ);
+    write_u64(offset, 112, 0x1000);
+    uint8_t *final = (uint8_t *) malloc(120+file_size);
 
 
 }
