@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
 
 void generate() {
     FILE *file = fopen("output.o", "rb");
@@ -33,7 +35,18 @@ void generate() {
     offset[13]=0;
     offset[14]=0;
     offset[15]=0;
-    offset[16]=0;
+    offset[16]=2;
+    offset[17]=0;
+    offset[18]=62;
+    offset[19]=0;
+    offset[20]=1;
+    offset[21]=0;
+    offset[22]=0;
+    offset[23]=0;
+    write_u64(offset, 24, 0x400000);
+    write_u64(offset, 32,64);
+    write_u64(offset, 40,);
+
 
 }
 
