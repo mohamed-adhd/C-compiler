@@ -26,7 +26,6 @@ void skip_whitespace(asm_lexer *l) {
         break;
     }
 }
-
 asm_token asm_next_token(asm_lexer *l) {
     asm_skip_whitespace(l);
     asm_token temp = {0};
@@ -59,7 +58,14 @@ asm_token asm_next_token(asm_lexer *l) {
         }
         l->position++;
         return temp;
+    }else if (isdigit(s)) {
+        temp.type=ASM_TOKEN_NUMBER;
+        int value = 0;
+        while (isdigit((unsigned char)l->source[l->position])) {
+            value = value * 10 + (l->source[l->position] - '0');
+            l->position++;
+        }
+        temp.val=value;
+        return temp;
     }
-
-    
 }
