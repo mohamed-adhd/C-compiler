@@ -6,6 +6,7 @@
 #include "masm.h"
 
 #include <ctype.h>
+#include <stdbool.h>
 #include <string.h>
 
 void lexer_init(asm_lexer *l, const char *source) {
@@ -111,6 +112,32 @@ void asm_parser_init(asm_parser *p, asm_token *tokens, int count) {
     p->pos = 0;
     p->count = count;
 }
+bool register_from_name(char* name) {
+
+
+}
+bool is_register_name(char* name) {
+    if (strcmp(name, "rax")) {
+        return true;
+    }else if (strcmp(name, "rbx")) {
+        return true;
+    }else if (strcmp(name, "rcx") ){
+        return true;
+    }else if (strcmp(name, "rdx") ){
+        return true;
+    }else if (strcmp(name, "rsi") ){
+        return true;
+    }else if (strcmp(name, "rdi") ){
+        return true;
+    }else if (strcmp(name, "rbp") ){
+        return true;
+    }else if (strcmp(name, "rsp") ){
+        return true;
+    }
+    return false ;
+
+
+}
 operand asm_parse_operand(asm_parser *p) {
     operand op = {0};
     asm_token t = p->tokens[p->pos];
@@ -167,11 +194,12 @@ asm_line asm_parse_line(asm_parser *p) {
     }
     line.instr.op1 = asm_parse_operand(p);
     if (p->tokens[p->pos].type == ASM_TOKEN_COMMA) {
-        p->pos++; 
+        p->pos++;
         line.instr.op2 = asm_parse_operand(p);
     } else {
         line.instr.op2.type = OPERAND_NONE;
     }
     return line;
 }
+
 
