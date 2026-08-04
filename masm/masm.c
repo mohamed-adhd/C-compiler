@@ -6,6 +6,7 @@
 #include "masm.h"
 
 #include <ctype.h>
+#include <string.h>
 
 void lexer_init(asm_lexer *l, const char *source) {
     l->source = source;
@@ -58,14 +59,26 @@ asm_token asm_next_token(asm_lexer *l) {
         }
         l->position++;
         return temp;
-    }else if (isdigit(s)) {
-        temp.type=ASM_TOKEN_NUMBER;
-        int value = 0;
-        while (isdigit((unsigned char)l->source[l->position])) {
-            value = value * 10 + (l->source[l->position] - '0');
-            l->position++;
-        }
-        temp.val=value;
+    } else if (isalpha((unsigned char)s) || s == '_' || s == '.') {
+        char buffer[64];
+        int i = 0;
+        while (isalnum((unsigned char)l->source[l->position]) ||
+               l->source[l->position] == '_' ||
+               l->source[l->position] == '.') {
+            buffer[i++] = l->source[l->position];
+            l->position++;}
+        buffer[i] = '\0';
+
+        temp.type = ASM_TOKEN_IDENTIFIER;
+        temp.txt = strdup(buffer);
         return temp;
     }
+}
+void free_tokens(asm_token *tokens) {
+    if (tokens == NULL) {
+        return;
+    }for (int i = 0; tokens[i].type != ASM_TOKEN_EOF; i++) {
+        free(tokens[i].txt);
+    }
+    free(tokens);
 }
