@@ -26,3 +26,40 @@ void skip_whitespace(asm_lexer *l) {
         break;
     }
 }
+
+asm_token asm_next_token(asm_lexer *l) {
+    asm_skip_whitespace(l);
+    asm_token temp = {0};
+    char s = l->source[l->position];
+    if (s == '\0') {
+        temp.type = ASM_TOKEN_EOF;
+        return temp;
+    }
+
+    if (s==','||s=='['||s==']'||s=='.'||s==':'||s=='\n') {
+        switch (s) {
+            case ':':
+                temp.type = ASM_TOKEN_COLON;
+                break;
+            case '[':
+                temp.type = ASM_TOKEN_LBRACE;
+                break;
+            case ']':
+                temp.type = ASM_TOKEN_RBRACE;
+                break;
+            case ',':
+                temp.type = ASM_TOKEN_COMMA;
+                break;
+            case '\n':
+                temp.type = ASM_TOKEN_NEWLINE;
+                break;
+            case '.':
+                temp.type = ASM_TOKEN_POINT;
+                break;
+        }
+        l->position++;
+        return temp;
+    }
+
+    
+}

@@ -11,34 +11,35 @@ typedef enum {
     REG_RAX, REG_RCX, REG_RDX, REG_RBX,REG_RSP, REG_RBP, REG_RSI, REG_RDI
 } register_id;
 typedef enum{
-    TOKEN_NUMBER,
-    TOKEN_IDENTIFIER,
-    TOKEN_COMMA,
-    TOKEN_LBRACE,
-    TOKEN_RBRACE,
-    TOKEN_ver,
-    TOKEN_NEWLINE,
-    TOKEN_COLON,
-    TOKEN_EOF
-}tokentype;
+    ASM_TOKEN_NUMBER,
+    ASM_TOKEN_IDENTIFIER,
+    ASM_TOKEN_COMMA,
+    ASM_TOKEN_LBRACE,
+    ASM_TOKEN_RBRACE,
+    ASM_TOKEN_ver,
+    ASM_TOKEN_NEWLINE,
+    ASM_TOKEN_COLON,
+    ASM_TOKEN_POINT,
+    ASM_TOKEN_EOF
+}asm_tokentype;
 typedef struct {
     const char *source;
     size_t position;
 } asm_lexer;
 typedef struct{
-    tokentype type;
+    asm_tokentype type;
     char *txt;
     int val;
-}token;
+}asm_token;
 typedef struct {
-    token *tokens;
+    asm_token *tokens;
     int pos;
     int count;
 } asm_parser;
-char peek(asm_lexer *l);
-char advance(asm_lexer *l);
-void skip_whitespace(asm_lexer *l);
-token next_token(asm_lexer *l);
+char asm_peek(asm_lexer *l);
+char asm_advance(asm_lexer *l);
+void asm_skip_whitespace(asm_lexer *l);
+asm_token asm_next_token(asm_lexer *l);
 typedef struct {
     operand_type type;
     register_id reg;
