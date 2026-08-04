@@ -1,3 +1,4 @@
+BITS 64
 section .bss
     count: resb 1
     itoa_buffer: resb 12
@@ -43,6 +44,9 @@ mov rax,1
 mov rdi,1
 lea rsi,[itoa_buffer]
 movzx rdx,byte [itoa_len]
+syscall
+mov rax, 60
+mov rdi, 0
 syscall
 mov rax, 60
 mov rdi, 0

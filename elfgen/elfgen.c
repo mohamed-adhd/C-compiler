@@ -7,9 +7,26 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/stat.h>
+void write_u16(unsigned char *buf, int offset, unsigned short value) {
+    buf[offset]   = value &  0xFF;
+    buf[offset+1] = (value >> 8) & 0xFF;
+}
 
+void write_u32(unsigned char *buf, int offset, unsigned int value) {
+    buf[offset]   = value & 0xFF;
+    buf[offset+1] = (value >> 8)  & 0xFF;
+    buf[offset+2] = (value >> 16) & 0xFF;
+    buf[offset+3] = (value >> 24) & 0xFF;
+}
+
+void write_u64(unsigned char *buf, int offset, unsigned long value) {
+    for (int i = 0; i < 8; i++) {
+        buf[offset + i] = (value >> (8 * i)) & 0xFF;
+    }
+}
 void generate() {
-    FILE *file = fopen("output.o", "rb");
+    FILE *file = fopen("output.bin", "rb");
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
@@ -56,8 +73,8 @@ void generate() {
     write_u64(offset, 72, 120);
     write_u64(offset, 80, 0x400000);
     write_u64(offset, 88, 0x400000);
-    write_u64(offset, 96, FILESZ);
-    write_u64(offset, 104, FILESZ);
+    write_u64(offset, 96, file_size);
+    write_u64(offset, 104, file_size);
     write_u64(offset, 112, 0x1000);
     uint8_t *final = (uint8_t *) malloc(120+file_size);
     if (!final) {
@@ -68,23 +85,9 @@ void generate() {
     memcpy(final+120,buff,file_size);
     FILE* so= fopen("typeshi","wb");
         fwrite(final,1,file_size+120,so);
+        chmod("typeshi", 0755);
+    fclose(so);
 
 
 }
-void write_u16(unsigned char *buf, int offset, unsigned short value) {
-    buf[offset]   = value & 0xFF;
-    buf[offset+1] = (value >> 8) & 0xFF;
-}
 
-void write_u32(unsigned char *buf, int offset, unsigned int value) {
-    buf[offset]   = value & 0xFF;
-    buf[offset+1] = (value >> 8)  & 0xFF;
-    buf[offset+2] = (value >> 16) & 0xFF;
-    buf[offset+3] = (value >> 24) & 0xFF;
-}
-
-void write_u64(unsigned char *buf, int offset, unsigned long value) {
-    for (int i = 0; i < 8; i++) {
-        buf[offset + i] = (value >> (8 * i)) & 0xFF;
-    }
-}

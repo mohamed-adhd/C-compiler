@@ -5,6 +5,7 @@ set(CMAKE_C_STANDARD 11)
 
 include_directories(.)
 include_directories(codegen)
+include_directories(elfgen)
 include_directories(lexer)
 include_directories(parse)
 include_directories(semantic)
@@ -15,6 +16,8 @@ add_executable(C_compiler
         codegen/codegen.c
         codegen/codegen.h
         lexer/lexer.c
+        elfgen/elfgen.c
+        elfgen/elfgen.h
         lexer/lexer.h
         lexer/token.c
         lexer/token.h
@@ -27,4 +30,5 @@ add_executable(C_compiler
         util/errors.h
         util/util.c
         util/util.h
-        main.c)
+        main.c
+        elfgen/elfgen.h)

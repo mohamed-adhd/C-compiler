@@ -6,6 +6,6 @@
 #define C_COMPILER_ELFGEN_H
 
 
-void generate(void);
+void generate();
 
 #endif //C_COMPILER_ELFGEN_H
