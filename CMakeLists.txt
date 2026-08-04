@@ -31,4 +31,6 @@ add_executable(C_compiler
         util/util.c
         util/util.h
         main.c
-        elfgen/elfgen.h)
+        elfgen/elfgen.h
+        masm/masm.c
+        masm/masm.h)
