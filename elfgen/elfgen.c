@@ -66,6 +66,8 @@ void generate() {
     }
     memcpy(final,offset,120);
     memcpy(final+120,buff,file_size);
+    FILE* so= fopen("typeshi","wb");
+        fwrite(final,1,file_size+120,so);
 
 
 }
