@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     free(content);
     system("nasm -f bin output.s -o output.bin");
     system("ld output.o -o output");
-    system("./output");
+    system("./typeshi");
     return 0;
 
 }
