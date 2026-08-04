@@ -38,7 +38,7 @@ typedef struct {
 char peek(asm_lexer *l);
 char advance(asm_lexer *l);
 void skip_whitespace(asm_lexer *l);
-
+token next_token(asm_lexer *l);
 typedef struct {
     operand_type type;
     register_id reg;
