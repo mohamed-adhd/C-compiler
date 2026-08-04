@@ -37,7 +37,7 @@ void codegen_program(astnode *program, FILE *out) {
     "\n"
     "    leave\n"
     "    ret\n";
-    fprintf(out, "BITS 64\norg 0x400000\n");
+fprintf(out, "BITS 64\norg 0x400078\n");
     codegen_function(program->function, out);
     fprintf(out, "%s", ITOA_HELPER);
 

@@ -1,5 +1,21 @@
 BITS 64
-org 0x400000
+org 0x400078
+global _start
+_start:
+mov rax, 5
+push rax
+mov rax, 4
+pop rcx
+add rax, rcx
+call itoa
+mov rax,1
+mov rdi,1
+lea rsi,[itoa_buffer]
+movzx rdx,byte [itoa_len]
+syscall
+mov rax, 60
+mov rdi, 0
+syscall
 section .data
 count: db 0
 itoa_buffer: times 12 db 0
@@ -33,19 +49,6 @@ itoa:
 
     leave
     ret
-global _start
-_start:
-mov rax, 5
-push rax
-mov rax, 4
-pop rcx
-add rax, rcx
-call itoa
-mov rax,1
-mov rdi,1
-lea rsi,[itoa_buffer]
-movzx rdx,byte [itoa_len]
-syscall
 mov rax, 60
 mov rdi, 0
 syscall
