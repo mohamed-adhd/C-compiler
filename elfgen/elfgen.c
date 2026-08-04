@@ -69,3 +69,20 @@ void generate() {
 
 
 }
+void write_u16(unsigned char *buf, int offset, unsigned short value) {
+    buf[offset]   = value & 0xFF;
+    buf[offset+1] = (value >> 8) & 0xFF;
+}
+
+void write_u32(unsigned char *buf, int offset, unsigned int value) {
+    buf[offset]   = value & 0xFF;
+    buf[offset+1] = (value >> 8)  & 0xFF;
+    buf[offset+2] = (value >> 16) & 0xFF;
+    buf[offset+3] = (value >> 24) & 0xFF;
+}
+
+void write_u64(unsigned char *buf, int offset, unsigned long value) {
+    for (int i = 0; i < 8; i++) {
+        buf[offset + i] = (value >> (8 * i)) & 0xFF;
+    }
+}
