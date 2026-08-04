@@ -4,16 +4,10 @@
 #include "elfgen.h"
 void codegen_program(astnode *program, FILE *out) {
     const char *ITOA_HELPER =
-        "BITS 64\n"
-  "org 0x400000\n"
-  "section .data\n"
-  "count: db 0\n"
-  "itoa_buffer: times 12 db 0\n"
-  "itoa_len: db 0\n"
-    "section .bss\n"
-    "    count: resb 1\n"
-    "    itoa_buffer: resb 12\n"
-    "    itoa_len: resb 1\n"
+    "section .data\n"
+    "count: db 0\n"
+    "itoa_buffer: times 12 db 0\n"
+    "itoa_len: db 0\n"
     "\n"
     "section .text\n"
     "itoa:\n"
@@ -43,15 +37,18 @@ void codegen_program(astnode *program, FILE *out) {
     "\n"
     "    leave\n"
     "    ret\n";
-    fprintf(out,"%s", ITOA_HELPER);
+    fprintf(out, "BITS 64\norg 0x400000\n");
     codegen_function(program->function, out);
+    fprintf(out, "%s", ITOA_HELPER);
 
 }
 void codegen_function(astnode *function, FILE *out) {
     (void)function;
     fprintf(out, "global _start\n_start:\n");
     codegen_statement(function->body, out);
-
+    fprintf(out, "mov rax, 60\n");
+    fprintf(out, "mov rdi, 0\n");
+    fprintf(out, "syscall\n");
 }
 void codegen_statement(astnode *stmt, FILE *out) {
     if (stmt->type == NODE_PRINT) {
