@@ -21,11 +21,24 @@ typedef enum{
     TOKEN_COLON,
     TOKEN_EOF
 }tokentype;
+typedef struct {
+    const char *source;
+    size_t position;
+} asm_lexer;
 typedef struct{
     tokentype type;
     char *txt;
     int val;
 }token;
+typedef struct {
+    token *tokens;
+    int pos;
+    int count;
+} asm_parser;
+char peek(asm_lexer *l);
+char advance(asm_lexer *l);
+void skip_whitespace(asm_lexer *l);
+
 typedef struct {
     operand_type type;
     register_id reg;
