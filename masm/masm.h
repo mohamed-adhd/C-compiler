@@ -40,6 +40,7 @@ char asm_peek(asm_lexer *l);
 char asm_advance(asm_lexer *l);
 void asm_skip_whitespace(asm_lexer *l);
 asm_token asm_next_token(asm_lexer *l);
+asm_token *tokenizer(asm_lexer *l, int *count);
 typedef struct {
     operand_type type;
     register_id reg;

@@ -74,7 +74,7 @@ asm_token asm_next_token(asm_lexer *l) {
         return temp;
     }
 }
-void free_tokens(asm_token *tokens) {
+void asm_free_tokens(asm_token *tokens) {
     if (tokens == NULL) {
         return;
     }for (int i = 0; tokens[i].type != ASM_TOKEN_EOF; i++) {
@@ -82,3 +82,29 @@ void free_tokens(asm_token *tokens) {
     }
     free(tokens);
 }
+asm_token *tokenizer(asm_lexer *l, int *count) {
+    int capacity = 16;
+    asm_token *tokens = malloc((size_t)capacity * sizeof(asm_token));
+    if (tokens == NULL) {
+        *count = 0;
+        return NULL;
+    }
+    int i = 0;
+    do {
+        if (i == capacity) {
+            capacity *= 2;
+            asm_token *new_tokens = realloc(tokens, (size_t)capacity * sizeof(asm_token));
+            if (new_tokens == NULL) {
+                asm_free_tokens(tokens);
+                *count = 0;
+                return NULL;
+            }
+            tokens = new_tokens;
+        }
+        tokens[i] = asm_next_token(l);
+    } while (tokens[i++].type != ASM_TOKEN_EOF);
+    *count = i;
+    return tokens;
+}
+
+
