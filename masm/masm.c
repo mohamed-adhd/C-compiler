@@ -416,7 +416,18 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         buf[*offset]=0x89;
         *offset+=1;
         buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
-        *offset+=1;
+        *offset+=4;
+    }
+    if (strcmp(instr.mnemonic, "jne") == 0 || strcmp(instr.mnemonic, "jnz") == 0) {
+        long target = rv_label(labels, label_count, instr.op1.label);
+        long rel = target - (current_address + 6);
+        buf[*offset]= 0x0F;
+        buf[*offset + 1] =0x85;
+        buf[*offset + 2]= rel & 0xFF;
+        buf[*offset + 3]= (rel >> 8) & 0xFF;
+        buf[*offset + 4]= (rel >> 16) & 0xFF;
+        buf[*offset + 5]= (rel >> 24) & 0xFF;
+        *offset += 6;
     }
 }
 }
