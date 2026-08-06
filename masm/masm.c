@@ -214,10 +214,22 @@ asm_line asm_parse_line(asm_parser *p) {
     return line;
 }
 
-asm_line asm_parse_prog(asm_parser *p) {
+asm_line *asm_parse_program(asm_parser *p, int *out_count) {
+    asm_line *lines = malloc(sizeof(asm_line) * 1024);
+    int count = 0;
     while (p->tokens[p->pos].type != ASM_TOKEN_EOF) {
-        asm_parse_line(p);
+        if (p->tokens[p->pos].type == ASM_TOKEN_NEWLINE) {
+            p->pos++;
+            continue;
+        }
+        lines[count] = asm_parse_line(p);
+        count++;
+        if (p->tokens[p->pos].type == ASM_TOKEN_NEWLINE) {
+            p->pos++;
+        }
     }
+    *out_count = count;
+    return lines;
 }
 void encoding() {
     
