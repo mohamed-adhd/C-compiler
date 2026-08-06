@@ -8,7 +8,7 @@ typedef enum {
     OPERAND_NONE,OPERAND_REGISTER,OPERAND_IMMEDIATE,OPERAND_MEMORY,OPERAND_LABEL
 } operand_type;
 typedef enum {
-    REG_RAX, REG_RCX, REG_RDX, REG_RBX,REG_RSP, REG_RBP, REG_RSI, REG_RDI
+    REG_RAX, REG_RCX, REG_RDX, REG_RBX,REG_RSP, REG_RBP, REG_RSI, REG_RDI,REG_RDP
 } register_id;
 typedef enum{
     ASM_TOKEN_NUMBER,
@@ -49,13 +49,14 @@ typedef struct {
     char label[32];
 } operand;
 typedef struct {
-    int is_label;
-    char label_name[32];
-    instruction instr;
-} asm_line;
-typedef struct {
     char mnemonic[16];
     operand op1;
     operand op2;
 } instruction;
+typedef struct {
+    int is_label;
+    char label_name[32];
+    instruction instr;
+} asm_line;
+void encoding();
 #endif //C_COMPILER_MASM_H

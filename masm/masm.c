@@ -112,9 +112,24 @@ void asm_parser_init(asm_parser *p, asm_token *tokens, int count) {
     p->pos = 0;
     p->count = count;
 }
-bool register_from_name(char* name) {
-
-
+register_id register_from_name(char* name) {
+    if (strcmp(name, "rax")) {
+        return REG_RAX;
+    }else if (strcmp(name, "rbx")) {
+        return REG_RBX;
+    }else if (strcmp(name, "rcx") ){
+        return REG_RCX;
+    }else if (strcmp(name, "rdx") ){
+        return REG_RDX;
+    }else if (strcmp(name, "rsi") ){
+        return REG_RSI;
+    }else if (strcmp(name, "rdi") ){
+        return REG_RDI;
+    }else if (strcmp(name, "rbp") ){
+        return REG_RDP;
+    }else if (strcmp(name, "rsp") ){
+        return REG_RSP;
+    }
 }
 bool is_register_name(char* name) {
     if (strcmp(name, "rax")) {
@@ -135,8 +150,6 @@ bool is_register_name(char* name) {
         return true;
     }
     return false ;
-
-
 }
 operand asm_parse_operand(asm_parser *p) {
     operand op = {0};
@@ -169,7 +182,6 @@ operand asm_parse_operand(asm_parser *p) {
         p->pos++;
         return op;
     }
-
     fprintf(stderr, "ay you fucked up the parser\n");
     exit(1);
 }
@@ -200,6 +212,15 @@ asm_line asm_parse_line(asm_parser *p) {
         line.instr.op2.type = OPERAND_NONE;
     }
     return line;
+}
+
+asm_line asm_parse_prog(asm_parser *p) {
+    while (p->tokens[p->pos].type != ASM_TOKEN_EOF) {
+        asm_parse_line(p);
+    }
+}
+void encoding() {
+    
 }
 
 
