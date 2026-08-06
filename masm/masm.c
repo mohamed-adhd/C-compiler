@@ -378,6 +378,30 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
         *offset+=1;
     }
+    if (strcmp(instr.mnemonic, "xor") == 0) {
+        buf[*offset]=0x48;
+        *offset+=1;
+        buf[*offset]=0x31;
+        *offset+=1;
+        buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
+        *offset+=1;
+    }
+    if (strcmp(instr.mnemonic, "cmp") == 0) {
+        buf[*offset]=0x48;
+        *offset+=1;
+        buf[*offset]=0x39;
+        *offset+=1;
+        buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
+        *offset+=1;
+    }
+    if (strcmp(instr.mnemonic, "mov") == 0) {
+        buf[*offset]=0x48;
+        *offset+=1;
+        buf[*offset]=0x89;
+        *offset+=1;
+        buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
+        *offset+=1;
+    }
 }
 }
 
