@@ -221,7 +221,7 @@ asm_line *asm_parse_program(asm_parser *p, int *out_count) {
         if (p->tokens[p->pos].type == ASM_TOKEN_NEWLINE) {
             p->pos++;
             continue;
-        }
+        }//bs
         lines[count] = asm_parse_line(p);
         count++;
         if (p->tokens[p->pos].type == ASM_TOKEN_NEWLINE) {
@@ -230,6 +230,98 @@ asm_line *asm_parse_program(asm_parser *p, int *out_count) {
     }
     *out_count = count;
     return lines;
+}
+typedef struct {
+    char name[32];
+    long address;
+} label_entry;
+int instruction_size(instruction instr) {
+    const char *m = instr.mnemonic;
+    if (strcmp(m, "ret") == 0) return 1;
+    if (strcmp(m, "leave") == 0) return 1;
+    if (strcmp(m, "syscall") == 0) return 2;
+    // one-operand, register only
+    if (strcmp(m, "push") == 0) return 1;
+    if (strcmp(m, "pop") == 0) return 1;
+    if (strcmp(m, "inc") == 0) return 3;
+    if (strcmp(m, "dec") == 0) return 3;
+    if (strcmp(m, "div") == 0) return 3;
+    if (strcmp(m, "add") == 0) return 3;
+    if (strcmp(m, "sub") == 0) return 3;
+    if (strcmp(m, "xor") == 0) return 3;
+    if (strcmp(m, "cmp") == 0) return 3;
+    if (strcmp(m, "mov") == 0) {
+        if (instr.op2.type == OPERAND_IMMEDIATE && instr.op1.type == OPERAND_REGISTER)
+            return 7;
+        if (instr.op2.type == OPERAND_REGISTER && instr.op1.type == OPERAND_REGISTER)
+            return 3;
+        if (instr.op1.type == OPERAND_MEMORY && instr.op2.type == OPERAND_IMMEDIATE)
+            return 11;
+        if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_MEMORY)
+            return 7;
+        fprintf(stderr, "instruction_size is kinda wrong twin\n");
+        exit(1);
+    }
+    if (strcmp(m, "lea") == 0) return 7;
+    if (strcmp(m, "movzx") == 0) return 8;
+    if (strcmp(m, "call") == 0) return 5;
+    if (strcmp(m, "jne") == 0) return 6;
+    if (strcmp(m, "jnz") == 0) return 6;
+
+    fprintf(stderr, "who tf is  '%s'\n", m);
+    exit(1);
+}
+void pass1() {
+    label_entry labels[64];
+    int label_count = 0;
+
+    long current_offset = 0;
+
+    for (int i = 0; i < line_count; i++) {
+        if (lines[i].is_label) {
+            strcpy(labels[label_count].name, lines[i].label_name);
+            labels[label_count].address = current_offset;
+            label_count++;
+        } else {
+            current_offset += instruction_size(lines[i].instr);
+        }
+    }
+}
+int instruction_size(instruction instr) {
+    const char *m = instr.mnemonic;
+    if (strcmp(m, "ret") == 0) return 1;
+    if (strcmp(m, "leave") == 0) return 1;
+    if (strcmp(m, "syscall") == 0) return 2;
+    // one-operand, register only
+    if (strcmp(m, "push") == 0) return 1;
+    if (strcmp(m, "pop") == 0) return 1;
+    if (strcmp(m, "inc") == 0) return 3;
+    if (strcmp(m, "dec") == 0) return 3;
+    if (strcmp(m, "div") == 0) return 3;
+    if (strcmp(m, "add") == 0) return 3;
+    if (strcmp(m, "sub") == 0) return 3;
+    if (strcmp(m, "xor") == 0) return 3;
+    if (strcmp(m, "cmp") == 0) return 3;
+    if (strcmp(m, "mov") == 0) {
+        if (instr.op2.type == OPERAND_IMMEDIATE && instr.op1.type == OPERAND_REGISTER)
+            return 7;
+        if (instr.op2.type == OPERAND_REGISTER && instr.op1.type == OPERAND_REGISTER)
+            return 3;
+        if (instr.op1.type == OPERAND_MEMORY && instr.op2.type == OPERAND_IMMEDIATE)
+            return 11;
+        if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_MEMORY)
+            return 7;
+        fprintf(stderr, "instruction_size is kinda wrong twin\n");
+        exit(1);
+    }
+    if (strcmp(m, "lea") == 0) return 7;
+    if (strcmp(m, "movzx") == 0) return 8;
+    if (strcmp(m, "call") == 0) return 5;
+    if (strcmp(m, "jne") == 0) return 6;
+    if (strcmp(m, "jnz") == 0) return 6;
+
+    fprintf(stderr, "who tf is  '%s'\n", m);
+    exit(1);
 }
 void encoding() {
     
