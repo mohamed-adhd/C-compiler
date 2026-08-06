@@ -332,35 +332,51 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
             *offset+=1;
         }
     }else if (instr.op2.type==OPERAND_NONE){
-        if (strcmp(instr.mnemonic, "push") == 0) {
-            buf[*offset]=0x50+get_the_gun(instr.op1.reg);
-            *offset+=1;
-        }
-        if (strcmp(instr.mnemonic, "pop") == 0) {
-            buf[*offset]=0x58+get_the_gun(instr.op1.reg);
-            *offset+=1;
-        }if (strcmp(instr.mnemonic, "inc") == 0) {
+       if (instr.op1.im!=-5098){
+           if (strcmp(instr.mnemonic, "push") == 0) {
+               buf[*offset]=0x50+get_the_gun(instr.op1.reg);
+               *offset+=1;
+           }
+           if (strcmp(instr.mnemonic, "pop") == 0) {
+               buf[*offset]=0x58+get_the_gun(instr.op1.reg);
+               *offset+=1;
+           }if (strcmp(instr.mnemonic, "inc") == 0) {
+               buf[*offset]=0x48;
+               *offset+=1;
+               buf[*offset]=0xFF;
+               *offset+=1;
+               buf[*offset]=0xC0 || get_the_gun(instr.op1.reg);
+               *offset+=1;
+           }if (strcmp(instr.mnemonic, "inc") == 0) {
+               buf[*offset]=0x48;
+               *offset+=1;
+               buf[*offset]=0xFF;
+               *offset+=1;
+               buf[*offset]=0xC8 || get_the_gun(instr.op1.reg);
+               *offset+=1;
+           }if (strcmp(instr.mnemonic, "div") == 0) {
+               buf[*offset]=0x48;
+               *offset+=1;
+               buf[*offset]=0xF7;
+               *offset+=1;
+               buf[*offset]=0xF0 || get_the_gun(instr.op1.reg);
+               *offset+=1;
+           }
+    }else {
+        if (strcmp(instr.mnemonic, "mov") == 0) {
             buf[*offset]=0x48;
             *offset+=1;
-            buf[*offset]=0xFF;
+            buf[*offset]=0xC7;
             *offset+=1;
             buf[*offset]=0xC0 || get_the_gun(instr.op1.reg);
             *offset+=1;
-        }if (strcmp(instr.mnemonic, "inc") == 0) {
-            buf[*offset]=0x48;
-            *offset+=1;
-            buf[*offset]=0xFF;
-            *offset+=1;
-            buf[*offset]=0xC8 || get_the_gun(instr.op1.reg);
-            *offset+=1;
-        }if (strcmp(instr.mnemonic, "div") == 0) {
-            buf[*offset]=0x48;
-            *offset+=1;
-            buf[*offset]=0xF7;
-            *offset+=1;
-            buf[*offset]=0xF0 || get_the_gun(instr.op1.reg);
-            *offset+=1;
+            size_t size = sizeof(long);
+            for (int i = 0; i < size; i++) {
+                buf[*offset + i] = (unsigned char)(instr.op1.im & 0xFF);
+                instr.op1.im >>= 8;
+            }
         }
+    }
 }else {
     if (strcmp(instr.mnemonic, "add") == 0) {
         buf[*offset]=0x48;
