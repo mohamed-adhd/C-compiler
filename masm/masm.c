@@ -113,7 +113,7 @@ void asm_parser_init(asm_parser *p, asm_token *tokens, int count) {
     p->count = count;
 }
 register_id register_from_name(char* name) {
-    if (strcmp(name, "rax")) {
+    if (strcmp(name, "raxregister_id")) {
         return REG_RAX;
     }else if (strcmp(name, "rbx")==0) {
         return REG_RBX;
@@ -289,8 +289,27 @@ long rv_label(label_entry *labels, int lt, const char *name) {
     fprintf(stderr, "man who tf is  %s\n", name);
     exit(1);
 }
+int get_the_gun(register_id name) {
+    if (name==REG_RAX) {
+        return 0;
+    }else if (name==REG_RBX) {
+        return 3;
+    }else if (name==REG_RCX){
+        return 1;
+    }else if (name==REG_RDX){
+        return 2;
+    }else if (name==REG_RSI){
+        return 6;
+    }else if (name==REG_RDI){
+        return 7;
+    }else if (name==REG_RBP){
+        return 5;
+    }else if (name==REG_RSP){
+        return 4;
+    }
+}
 void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,label_entry *labels, int label_count, long current_address) {
-    if (instr.op2.type==OPERAND_NONE) {
+    if (instr.op2.type==OPERAND_NONE && instr.op1.type==OPERAND_NONE) {
         if (strcmp(instr.mnemonic, "ret") == 0) {
             buf[*offset] = 0xC3;
             *offset += 1;
@@ -312,7 +331,17 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
             buf[*offset]=0xC9;
             *offset+=1;
         }
-    }
+    }else if (instr.op2.type==OPERAND_NONE){
+        if (strcmp(instr.mnemonic, "push") == 0) {
+            buf[*offset]=0x50+get_the_gun(instr.op1.reg);
+            *offset+=1;
+        }
+        if (strcmp(instr.mnemonic, "pop") == 0) {
+            buf[*offset]=0x58+get_the_gun(instr.op1.reg);
+            *offset+=1;
+        }
+
+
 
 
 
