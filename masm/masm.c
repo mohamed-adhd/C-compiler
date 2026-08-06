@@ -299,8 +299,16 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         buf[*offset] = 0x0F;
         buf[*offset + 1] = 0x05;
         *offset += 2;
-        return;
     }
+    if (strcmp(instr.mnemonic, "call") == 0) {
+        long ftg = rv_label(labels, label_count, instr.op1.label);
+        long res=ftg-(current_address+5);
+        buf[*offset]=0xEF;
+        *offset+=1;
+        buf[*offset]=res;
+
+
+
 
 
 }
