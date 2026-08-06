@@ -339,7 +339,22 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         if (strcmp(instr.mnemonic, "pop") == 0) {
             buf[*offset]=0x58+get_the_gun(instr.op1.reg);
             *offset+=1;
+        }if (strcmp(instr.mnemonic, "inc") == 0) {
+            buf[*offset]=0x48;
+            *offset+=1;
+            buf[*offset]=0xFF;
+            *offset+=1;
+            buf[*offset]=0xC0 || get_the_gun(instr.op1.reg);
+            *offset+=1;
+        }if (strcmp(instr.mnemonic, "inc") == 0) {
+            buf[*offset]=0x48;
+            *offset+=1;
+            buf[*offset]=0xFF;
+            *offset+=1;
+            buf[*offset]=0xC8 || get_the_gun(instr.op1.reg);
+            *offset+=1;
         }
+
 
 
 
