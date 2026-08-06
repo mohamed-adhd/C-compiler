@@ -282,6 +282,14 @@ label_entry* pass1(asm_line *lines,int line_count){
     }
     return labels;
 }
+long rv_label(label_entry *labels, int lt, const char *name) {
+    for (int i = 0; i < lt; i++) {
+        if (strcmp(labels[i].name, name) == 0) {
+            return labels[i].address;}
+    }
+    fprintf(stderr, "man who tf is  %s\n", name);
+    exit(1);
+}
 void encoding() {
     
 }
