@@ -115,17 +115,17 @@ void asm_parser_init(asm_parser *p, asm_token *tokens, int count) {
 register_id register_from_name(char* name) {
     if (strcmp(name, "rax")) {
         return REG_RAX;
-    }else if (strcmp(name, "rbx")) {
+    }else if (strcmp(name, "rbx")==0) {
         return REG_RBX;
-    }else if (strcmp(name, "rcx") ){
+    }else if (strcmp(name, "rcx")==0){
         return REG_RCX;
-    }else if (strcmp(name, "rdx") ){
+    }else if (strcmp(name, "rdx")==0){
         return REG_RDX;
-    }else if (strcmp(name, "rsi") ){
+    }else if (strcmp(name, "rsi")==0){
         return REG_RSI;
-    }else if (strcmp(name, "rdi") ){
+    }else if (strcmp(name, "rdi")==0){
         return REG_RDI;
-    }else if (strcmp(name, "rbp") ){
+    }else if (strcmp(name, "rbp")==0){
         return REG_RDP;
     }else if (strcmp(name, "rsp") ){
         return REG_RSP;
@@ -134,19 +134,19 @@ register_id register_from_name(char* name) {
 bool is_register_name(char* name) {
     if (strcmp(name, "rax")) {
         return true;
-    }else if (strcmp(name, "rbx")) {
+    }else if (strcmp(name, "rbx")==0) {
         return true;
-    }else if (strcmp(name, "rcx") ){
+    }else if (strcmp(name, "rcx")==0){
         return true;
-    }else if (strcmp(name, "rdx") ){
+    }else if (strcmp(name, "rdx")==0 ){
         return true;
-    }else if (strcmp(name, "rsi") ){
+    }else if (strcmp(name, "rsi")==0 ){
         return true;
-    }else if (strcmp(name, "rdi") ){
+    }else if (strcmp(name, "rdi")==0 ){
         return true;
-    }else if (strcmp(name, "rbp") ){
+    }else if (strcmp(name, "rbp")==0 ){
         return true;
-    }else if (strcmp(name, "rsp") ){
+    }else if (strcmp(name, "rsp")==0 ){
         return true;
     }
     return false ;
@@ -160,7 +160,6 @@ operand asm_parse_operand(asm_parser *p) {
         p->pos++;
         return op;
     }
-
     if (t.type == ASM_TOKEN_LBRACE) {
         p->pos++;
         asm_token inner = p->tokens[p->pos];
@@ -170,7 +169,6 @@ operand asm_parse_operand(asm_parser *p) {
         p->pos++; // started as a c compiler , now its , whatever the fuck this is
         return op;
     }
-
     if (t.type == ASM_TOKEN_IDENTIFIER) {
         if (is_register_name(t.txt)) {
             op.type = OPERAND_REGISTER;
@@ -240,7 +238,6 @@ int instruction_size(instruction instr) {
     if (strcmp(m, "ret") == 0) return 1;
     if (strcmp(m, "leave") == 0) return 1;
     if (strcmp(m, "syscall") == 0) return 2;
-    // one-operand, register only
     if (strcmp(m, "push") == 0) return 1;
     if (strcmp(m, "pop") == 0) return 1;
     if (strcmp(m, "inc") == 0) return 3;
@@ -269,15 +266,12 @@ int instruction_size(instruction instr) {
     if (strcmp(m, "jnz") == 0) return 6;
 
     fprintf(stderr, "who tf is  '%s'\n", m);
-    exit(1);
 }
-void pass1() {
+label_entry* pass1(asm_line *lines,int line_count){
     label_entry labels[64];
     int label_count = 0;
-
     long current_offset = 0;
-
-    for (int i = 0; i < line_count; i++) {
+    for(int i = 0; i < line_count; i++){
         if (lines[i].is_label) {
             strcpy(labels[label_count].name, lines[i].label_name);
             labels[label_count].address = current_offset;
@@ -286,42 +280,7 @@ void pass1() {
             current_offset += instruction_size(lines[i].instr);
         }
     }
-}
-int instruction_size(instruction instr) {
-    const char *m = instr.mnemonic;
-    if (strcmp(m, "ret") == 0) return 1;
-    if (strcmp(m, "leave") == 0) return 1;
-    if (strcmp(m, "syscall") == 0) return 2;
-    // one-operand, register only
-    if (strcmp(m, "push") == 0) return 1;
-    if (strcmp(m, "pop") == 0) return 1;
-    if (strcmp(m, "inc") == 0) return 3;
-    if (strcmp(m, "dec") == 0) return 3;
-    if (strcmp(m, "div") == 0) return 3;
-    if (strcmp(m, "add") == 0) return 3;
-    if (strcmp(m, "sub") == 0) return 3;
-    if (strcmp(m, "xor") == 0) return 3;
-    if (strcmp(m, "cmp") == 0) return 3;
-    if (strcmp(m, "mov") == 0) {
-        if (instr.op2.type == OPERAND_IMMEDIATE && instr.op1.type == OPERAND_REGISTER)
-            return 7;
-        if (instr.op2.type == OPERAND_REGISTER && instr.op1.type == OPERAND_REGISTER)
-            return 3;
-        if (instr.op1.type == OPERAND_MEMORY && instr.op2.type == OPERAND_IMMEDIATE)
-            return 11;
-        if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_MEMORY)
-            return 7;
-        fprintf(stderr, "instruction_size is kinda wrong twin\n");
-        exit(1);
-    }
-    if (strcmp(m, "lea") == 0) return 7;
-    if (strcmp(m, "movzx") == 0) return 8;
-    if (strcmp(m, "call") == 0) return 5;
-    if (strcmp(m, "jne") == 0) return 6;
-    if (strcmp(m, "jnz") == 0) return 6;
-
-    fprintf(stderr, "who tf is  '%s'\n", m);
-    exit(1);
+    return labels;
 }
 void encoding() {
     
