@@ -290,22 +290,32 @@ long rv_label(label_entry *labels, int lt, const char *name) {
     exit(1);
 }
 void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,label_entry *labels, int label_count, long current_address) {
-    if (strcmp(instr.mnemonic, "ret") == 0) {
-        buf[*offset] = 0xC3;
-        *offset += 1;
-        return;
+    if (instr.op2.type==OPERAND_NONE) {
+        if (strcmp(instr.mnemonic, "ret") == 0) {
+            buf[*offset] = 0xC3;
+            *offset += 1;
+            return;
+        }
+        if (strcmp(instr.mnemonic, "syscall") == 0) {
+            buf[*offset] = 0x0F;
+            buf[*offset + 1] = 0x05;
+            *offset += 2;
+        }
+        if (strcmp(instr.mnemonic, "call") == 0) {
+            long ftg = rv_label(labels, label_count, instr.op1.label);
+            long res=ftg-(current_address+5);
+            buf[*offset]=0xEF;
+            *offset+=1;
+            buf[*offset]=res;
+        }
+        if (strcmp(instr.mnemonic, "mov") == 0) {
+            buf[*offset]=0xC9;
+            *offset+=1;
+        }
     }
-    if (strcmp(instr.mnemonic, "syscall") == 0) {
-        buf[*offset] = 0x0F;
-        buf[*offset + 1] = 0x05;
-        *offset += 2;
-    }
-    if (strcmp(instr.mnemonic, "call") == 0) {
-        long ftg = rv_label(labels, label_count, instr.op1.label);
-        long res=ftg-(current_address+5);
-        buf[*offset]=0xEF;
-        *offset+=1;
-        buf[*offset]=res;
+
+
+
 
 
 
