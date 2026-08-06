@@ -285,13 +285,25 @@ label_entry* pass1(asm_line *lines,int line_count){
 long rv_label(label_entry *labels, int lt, const char *name) {
     for (int i = 0; i < lt; i++) {
         if (strcmp(labels[i].name, name) == 0) {
-            return labels[i].address;}
-    }
+            return labels[i].address;}}
     fprintf(stderr, "man who tf is  %s\n", name);
     exit(1);
 }
-void encoding() {
-    
+void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,label_entry *labels, int label_count, long current_address) {
+    if (strcmp(instr.mnemonic, "ret") == 0) {
+        buf[*offset] = 0xC3;
+        *offset += 1;
+        return;
+    }
+    if (strcmp(instr.mnemonic, "syscall") == 0) {
+        buf[*offset] = 0x0F;
+        buf[*offset + 1] = 0x05;
+        *offset += 2;
+        return;
+    }
+
+
+}
 }
 
 
