@@ -421,11 +421,35 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         buf[*offset]=0x39;
         *offset+=1;
         buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
-        *offset+=1;
-    }
+        *offset+=1;}
     if (strcmp(instr.mnemonic, "mov") == 0) {
         if (instr.op1.type ==OPERAND_MEMORY && instr.op2.type==OPERAND_IMMEDIATE) {
+            unsigned char modrm = 0x05;
+            long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 11);
+            long imm = instr.op2.im;
+            buf[*offset]     = 0x48;
+            buf[*offset + 1] = 0xC7;
+            buf[*offset + 2] = modrm;
+            buf[*offset + 3] = disp & 0xFF;
+            buf[*offset + 4] = (disp >> 8) & 0xFF;
+            buf[*offset + 5] = (disp >> 16) & 0xFF;
+            buf[*offset + 6] = (disp >> 24) & 0xFF;
+            buf[*offset + 7] = imm & 0xFF;
+            buf[*offset + 8] = (imm >> 8) & 0xFF;
+            buf[*offset + 9] = (imm >> 16) & 0xFF;
+            buf[*offset + 10] = (imm >> 24) & 0xFF;
+            *offset += 11;
         } else if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_MEMORY) {
+            unsigned char modrm = (instr.op1.reg << 3) | 0x05;
+            long disp = compute_rip_relative(labels, label_count, instr.op2.label,current_address + 7);
+            buf[*offset]     = 0x48;
+            buf[*offset + 1] = 0x8B;
+            buf[*offset + 2] = modrm;
+            buf[*offset + 3] = disp & 0xFF;
+            buf[*offset + 4] = (disp >> 8) & 0xFF;
+            buf[*offset + 5] = (disp >> 16) & 0xFF;
+            buf[*offset + 6] = (disp >> 24) & 0xFF;
+            *offset += 7;
         } else if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_IMMEDIATE) {
         } else if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_REGISTER) {
             buf[*offset]=0x48;
