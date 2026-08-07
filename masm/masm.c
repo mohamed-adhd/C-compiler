@@ -424,7 +424,17 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         *offset+=1;
     }
     if (strcmp(instr.mnemonic, "mov") == 0) {
-        
+        if (instr.op1.type ==OPERAND_MEMORY && instr.op2.type==OPERAND_IMMEDIATE) {
+        } else if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_MEMORY) {
+        } else if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_IMMEDIATE) {
+        } else if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_REGISTER) {
+            buf[*offset]=0x48;
+            *offset+=1;
+            buf[*offset]=0x89;
+            *offset+=1;
+            buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
+            *offset+=4;
+        }
     }
     if (strcmp(instr.mnemonic, "jne") == 0 || strcmp(instr.mnemonic, "jnz") == 0) {
         long target = rv_label(labels, label_count, instr.op1.label);
