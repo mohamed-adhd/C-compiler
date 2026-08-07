@@ -40,7 +40,7 @@ char asm_peek(asm_lexer *l);
 char asm_advance(asm_lexer *l);
 void asm_skip_whitespace(asm_lexer *l);
 asm_token asm_next_token(asm_lexer *l);
-asm_token *tokenizer(asm_lexer *l, int *count);
+asm_token *asm_tokenizer(asm_lexer *l, int *count);
 
 typedef struct {
     operand_type type;
@@ -59,4 +59,5 @@ typedef struct {
     instruction instr;
 } asm_line;
 void encoding();
+void avengers_assemble();
 #endif //C_COMPILER_MASM_H

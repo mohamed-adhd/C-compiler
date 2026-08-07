@@ -491,13 +491,6 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         *offset += 6;
     }
 }
-
-
-
-
-
-
-
 void pass2(asm_line *lines,int line_count,label_entry *labels,int label_count,unsigned char *output){
     long offset = 0;
     for(int i=0;i<line_count;i++)
@@ -527,7 +520,7 @@ void avengers_assemble() {
     asm_lexer lexi;
     asm_lexer_init(&lexi,content);
     int token_count = 0,outie=0;
-    asm_token *tkri = tokenizer(&lexi, &token_count);
+    asm_token *tkri = asm_tokenizer(&lexi, &token_count);
     asm_parser parsi;
     int s=0;
     asm_parser_init(&parsi,tkri,token_count);
