@@ -269,7 +269,7 @@ int instruction_size(instruction instr) {
 
     fprintf(stderr, "who tf is  '%s'\n", m);
 }
-label_entry* pass1(asm_line *lines,int line_count){
+label_entry* pass1(asm_line *lines,int line_count,int *lablecnt){
     label_entry labels[64];
     int label_count = 0;
     long current_offset = 0;
@@ -282,6 +282,7 @@ label_entry* pass1(asm_line *lines,int line_count){
             current_offset += instruction_size(lines[i].instr);
         }
     }
+    *lablecnt = label_count;
     return labels;
 }
 
@@ -528,15 +529,20 @@ void avengers_assemble() {
     int token_count = 0,outie=0;
     asm_token *tkri = tokenizer(&lexi, &token_count);
     asm_parser parsi;
+    int s=0;
     asm_parser_init(&parsi,tkri,token_count);
     asm_line* outp=asm_parse_program(&parsi,&outie);
-    label_entry* outpl=pass1(outp,outie);
+    label_entry* outpl=pass1(outp,outie,&s);
     long binary_size = 0;
     for (int i = 0; i < outie; i++) {
         if (!outp[i].is_label)
             binary_size += instruction_size(outp[i].instr);
     }
     unsigned char *buff = malloc(binary_size);
-    pass2(outp,outie,outpl,outie,&buff);
+    pass2(outp,outie,outpl,outie,buff);
+    FILE *f = fopen("output.bin", "wb");
+    fwrite(buff, 1, binary_size, f);
+    fclose(f);
+    free(buff);
 
 }
