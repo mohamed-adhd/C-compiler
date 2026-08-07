@@ -282,6 +282,23 @@ label_entry* pass1(asm_line *lines,int line_count){
     }
     return labels;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 long rv_label(label_entry *labels, int lt, const char *name) {
     for (int i = 0; i < lt; i++) {
         if (strcmp(labels[i].name, name) == 0) {
@@ -450,7 +467,6 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
             buf[*offset + 5] = (disp >> 16) & 0xFF;
             buf[*offset + 6] = (disp >> 24) & 0xFF;
             *offset += 7;
-        } else if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_IMMEDIATE) {
         } else if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_REGISTER) {
             buf[*offset]=0x48;
             *offset+=1;
@@ -475,3 +491,15 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
 }
 
 
+
+
+
+
+void pass2(asm_line *lines,int line_count,label_entry *labels,int label_count,unsigned char *output){
+    long offset = 0;
+    for(int i=0;i<line_count;i++)
+    {
+        if(lines[i].is_label)continue;
+        asm_encode_instruction(lines[i].instr,output,&offset,labels,label_count,offset);
+    }
+}
