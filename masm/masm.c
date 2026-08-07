@@ -9,18 +9,20 @@
 #include <stdbool.h>
 #include <string.h>
 
-void lexer_init(asm_lexer *l, const char *source) {
+#include "lexer.h"
+
+void asm_lexer_init(asm_lexer *l, const char *source) {
     l->source = source;
     l->position = 0;
 }
-char peek(asm_lexer *l) {
+char asm_peek(asm_lexer *l) {
     return l->source[l->position];
 }
-char advance(asm_lexer *l) {
+char asm_advance(asm_lexer *l) {
     l->position++;
     return l->source[l->position-1];
 }
-void skip_whitespace(asm_lexer *l) {
+void asm_skip_whitespace(asm_lexer *l) {
     for (;;) {
         while (isspace((unsigned char)l->source[l->position])) {
             l->position++;
@@ -83,7 +85,7 @@ void asm_free_tokens(asm_token *tokens) {
     }
     free(tokens);
 }
-asm_token *tokenizer(asm_lexer *l, int *count) {
+asm_token *asm_tokenizer(asm_lexer *l, int *count) {
     int capacity = 16;
     asm_token *tokens = malloc((size_t)capacity * sizeof(asm_token));
     if (tokens == NULL) {
@@ -488,7 +490,7 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         *offset += 6;
     }
 }
-}
+
 
 
 
@@ -502,4 +504,27 @@ void pass2(asm_line *lines,int line_count,label_entry *labels,int label_count,un
         if(lines[i].is_label)continue;
         asm_encode_instruction(lines[i].instr,output,&offset,labels,label_count,offset);
     }
+}
+
+
+
+
+
+void avengers_assemble() {
+    FILE *file = fopen("output.s", "r");
+    if (file ==NULL) {
+        printf("where tf is the file man");
+        return;
+    }
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    char *content = malloc(size + 1);
+    fread(content, 1, size, file);
+    content[size] = '\0';
+    fclose(file);
+    asm_lexer lexi;
+    asm_lexer_init(&lexi,content);
+    int token_count = 0;
+    token *tkr = tokenizer(&lex_luther, &token_count);
 }
