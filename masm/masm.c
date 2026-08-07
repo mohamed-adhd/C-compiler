@@ -23,12 +23,8 @@ char asm_advance(asm_lexer *l) {
     return l->source[l->position-1];
 }
 void asm_skip_whitespace(asm_lexer *l) {
-    for (;;) {
-        while (isspace((unsigned char)l->source[l->position])) {
-            l->position++;
-        }
-        break;
-    }
+    while (l->source[l->position] == ' ' ||l->source[l->position] == '\t' ||l->source[l->position] == '\r') {
+        l->position++;}
 }
 asm_token asm_next_token(asm_lexer *l) {
     asm_skip_whitespace(l);
@@ -222,6 +218,11 @@ operand asm_parse_operand(asm_parser *p) {
 asm_line asm_parse_line(asm_parser *p) {
     asm_line line = {0};
     asm_token first = p->tokens[p->pos];
+    if (first.type != ASM_TOKEN_IDENTIFIER) {
+        fprintf(stderr, "shi hit the fan :  %d at pos %d\n",
+                first.type, p->pos);
+        exit(1);
+    }
     if (first.type == ASM_TOKEN_IDENTIFIER &&
         p->tokens[p->pos + 1].type == ASM_TOKEN_COLON) {
         line.is_label = 1;
@@ -232,6 +233,18 @@ asm_line asm_parse_line(asm_parser *p) {
     }
     line.is_label = 0;
     strcpy(line.instr.mnemonic, first.txt);
+    if (strcmp(line.instr.mnemonic,"mov")==0 ||
+    strcmp(line.instr.mnemonic,"add")==0 ||
+    strcmp(line.instr.mnemonic,"sub")==0)
+    {
+        if(strcmp(p->tokens[p->pos].txt,"byte")==0 ||
+           strcmp(p->tokens[p->pos].txt,"word")==0 ||
+           strcmp(p->tokens[p->pos].txt,"dword")==0 ||
+           strcmp(p->tokens[p->pos].txt,"qword")==0)
+        {
+            p->pos++;
+        }
+    }
     p->pos++;
     if (p->tokens[p->pos].type == ASM_TOKEN_NEWLINE ||p->tokens[p->pos].type == ASM_TOKEN_EOF) {
         line.instr.op1.type = OPERAND_NONE;
@@ -251,11 +264,23 @@ asm_line asm_parse_line(asm_parser *p) {
 asm_line *asm_parse_program(asm_parser *p, int *out_count) {
     asm_line *lines = malloc(sizeof(asm_line) * 1024);
     int count = 0;
-    while (p->tokens[p->pos].type != ASM_TOKEN_EOF) {
+    while (p->tokens[p->pos].type != ASM_TOKEN_EOF) {printf("parser pos=%d token=%d",
+       p->pos,
+       p->tokens[p->pos].type);
+        if (p->tokens[p->pos].txt)
+            printf(" text=%s\n", p->tokens[p->pos].txt);
+        else
+            printf(" text=NULL\n");
         if (p->tokens[p->pos].type == ASM_TOKEN_NEWLINE) {
             p->pos++;
             continue;
         }//bs
+        if (strcmp(p->tokens[p->pos].txt, "BITS") == 0 ||
+    strcmp(p->tokens[p->pos].txt, "org") == 0 ||
+    strcmp(p->tokens[p->pos].txt, "global") == 0 ||
+    strcmp(p->tokens[p->pos].txt, "section") == 0) {
+            while (p->tokens[p->pos].type != ASM_TOKEN_NEWLINE && p->tokens[p->pos].type != ASM_TOKEN_EOF) {p->pos++;}
+            continue;}
         lines[count] = asm_parse_line(p);
         count++;
         if (p->tokens[p->pos].type == ASM_TOKEN_NEWLINE) {
@@ -562,14 +587,18 @@ void avengers_assemble() {
     asm_parser parsi;
     int s=0;
     asm_parser_init(&parsi,tkri,token_count);
+    printf("after parser init\n");
     asm_line* outp=asm_parse_program(&parsi,&outie);
+    printf("after parser prog\n");
     label_entry* outpl=pass1(outp,outie,&s);
+    printf("after pass 1\n");
     long binary_size = 0;
     for (int i = 0; i < outie; i++) {
         if (!outp[i].is_label)
             binary_size += instruction_size(outp[i].instr);}
     unsigned char *buff = malloc(binary_size);
     pass2(outp,outie,outpl,s,buff);
+    printf("after pass 2\n");
     FILE *f = fopen("output.bin", "wb");
     fwrite(buff, 1, binary_size, f);
     fclose(f);
