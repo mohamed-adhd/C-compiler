@@ -76,6 +76,30 @@ asm_token asm_next_token(asm_lexer *l) {
         temp.txt = strdup(buffer);
         return temp;
     }
+    else if (isdigit((unsigned char)s))
+    {
+        char buffer[64];
+        int i = 0;
+
+        while(isdigit((unsigned char)l->source[l->position]))
+        {
+            if(i < 63)
+                buffer[i++] = l->source[l->position];
+
+            l->position++;
+        }
+
+        buffer[i] = '\0';
+        temp.type = ASM_TOKEN_NUMBER;
+        temp.val = strtol(buffer,NULL,10);
+        return temp;
+    }
+    fprintf(stderr,"unknown char: '%c'\n", s);
+
+    l->position++;
+
+    temp.type = ASM_TOKEN_UNK;
+    return temp;
 }
 void asm_free_tokens(asm_token *tokens) {
     if (tokens == NULL) {
@@ -521,7 +545,10 @@ void avengers_assemble() {
     asm_lexer lexi;
     asm_lexer_init(&lexi,content);
     int token_count = 0,outie=0;
-    asm_token *tkri = asm_tokenizer(&lexi, &token_count);
+
+    printf("before tokenizer n shi\n");
+    asm_token* tkri = asm_tokenizer(&lexi,&token_count);
+    printf("after tokenizer type shi %d tokens\n",token_count);
     asm_parser parsi;
     int s=0;
     asm_parser_init(&parsi,tkri,token_count);
