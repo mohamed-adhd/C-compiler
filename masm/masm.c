@@ -93,6 +93,16 @@ asm_token asm_next_token(asm_lexer *l) {
         temp.type = ASM_TOKEN_NUMBER;
         temp.val = strtol(buffer,NULL,10);
         return temp;
+    }else if (s == '\'')
+    {
+        l->position++;
+        char c = l->source[l->position];
+        temp.type = ASM_TOKEN_NUMBER;
+        temp.val = (unsigned char)c;
+        l->position++;
+        if (l->source[l->position] == '\'')
+            l->position++;
+        return temp;
     }
     fprintf(stderr,"unknown char: '%c'\n", s);
 
@@ -557,8 +567,7 @@ void avengers_assemble() {
     long binary_size = 0;
     for (int i = 0; i < outie; i++) {
         if (!outp[i].is_label)
-            binary_size += instruction_size(outp[i].instr);
-    }
+            binary_size += instruction_size(outp[i].instr);}
     unsigned char *buff = malloc(binary_size);
     pass2(outp,outie,outpl,s,buff);
     FILE *f = fopen("output.bin", "wb");
