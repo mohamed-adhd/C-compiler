@@ -308,6 +308,9 @@ int get_the_gun(register_id name) {
         return 4;
     }
 }
+long compute_rip_relative(label_entry *labels, int label_count,const char *label_name, long address_after_instruction) {
+    long target = rv_label(labels, label_count, label_name);
+    return target - address_after_instruction;}
 void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,label_entry *labels, int label_count, long current_address) {
     if (instr.op2.type==OPERAND_NONE && instr.op1.type==OPERAND_NONE) {
         if (strcmp(instr.mnemonic, "ret") == 0) {
@@ -378,7 +381,17 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         }
     }
 }else {
-    if (strcmp(instr.mnemonic, "add") == 0) {
+    unsigned char modrm = (instr.op1.reg << 3) | 0x05;
+    long disp = compute_rip_relative(labels, label_count, instr.op2.label,current_address + 7);
+    buf[*offset]= 0x48;
+    buf[*offset +1]=0x8D;
+    buf[*offset +2] =modrm;
+    buf[*offset +3]= disp & 0xFF;
+    buf[*offset +4]= (disp >>8) &0xFF;
+    buf[*offset +5]= (disp >>16) &0xFF;
+    buf[*offset +6]= (disp >>24) &0xFF;
+    *offset += 7;
+}if (strcmp(instr.mnemonic, "add") == 0) {
         buf[*offset]=0x48;
         *offset+=1;
         buf[*offset]=0x01;
@@ -411,12 +424,7 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         *offset+=1;
     }
     if (strcmp(instr.mnemonic, "mov") == 0) {
-        buf[*offset]=0x48;
-        *offset+=1;
-        buf[*offset]=0x89;
-        *offset+=1;
-        buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
-        *offset+=4;
+        
     }
     if (strcmp(instr.mnemonic, "jne") == 0 || strcmp(instr.mnemonic, "jnz") == 0) {
         long target = rv_label(labels, label_count, instr.op1.label);
