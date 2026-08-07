@@ -1,8 +1,6 @@
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "codegen.h"
-#include "elfgen.h"
 #include "lexer.h"
 #include "parse.h"
 #include "token.h"
