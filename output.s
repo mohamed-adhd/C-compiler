@@ -11,7 +11,7 @@ call itoa
 mov rax,1
 mov rdi,1
 lea rsi,[itoa_buffer]
-movzx rdx,byte [itoa_len]
+movzx rdx,[itoa_len]
 syscall
 mov rax, 60
 mov rdi, 0
@@ -26,14 +26,14 @@ itoa:
     push rbp
     mov rbp, rsp
 
-    mov byte [count], 0
+    mov [count], 0
     mov rcx, 10
 .loop:
     xor rdx, rdx
     div rcx
     add dl, '0'
     push rdx
-    inc byte [count]
+    inc [count]
     cmp rax, 0
     jne .loop
 
@@ -44,7 +44,7 @@ itoa:
     pop rax
     mov [rdi], al
     inc rdi
-    dec byte [count]
+    dec [count]
     jnz .pop
 
     leave

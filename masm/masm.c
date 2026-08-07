@@ -35,7 +35,7 @@ asm_token asm_next_token(asm_lexer *l) {
         return temp;
     }
 
-    if (s==','||s=='['||s==']'||s=='.'||s==':'||s=='\n') {
+    if (s==','||s=='['||s==']'||s==':'||s=='\n') {
         switch (s) {
             case ':':
                 temp.type = ASM_TOKEN_COLON;
@@ -145,13 +145,13 @@ void asm_parser_init(asm_parser *p, asm_token *tokens, int count) {
     p->count = count;
 }
 register_id register_from_name(char* name) {
-    if (strcmp(name, "raxregister_id")==0) {
+    if (strcmp(name, "rax")==0|| strcmp(name, "al")==0) {
         return REG_RAX;
     }else if (strcmp(name, "rbx")==0) {
         return REG_RBX;
     }else if (strcmp(name, "rcx")==0){
         return REG_RCX;
-    }else if (strcmp(name, "rdx")==0){
+    }else if (strcmp(name, "rdx")==0|| strcmp(name, "dl")==0){
         return REG_RDX;
     }else if (strcmp(name, "rsi")==0){
         return REG_RSI;
@@ -164,7 +164,7 @@ register_id register_from_name(char* name) {
     }
 }
 bool is_register_name(char* name) {
-    if (strcmp(name, "rax")) {
+    if (strcmp(name, "rax")==0) {
         return true;
     }else if (strcmp(name, "rbx")==0) {
         return true;
@@ -179,6 +179,10 @@ bool is_register_name(char* name) {
     }else if (strcmp(name, "rbp")==0 ){
         return true;
     }else if (strcmp(name, "rsp")==0 ){
+        return true;
+    }else if (strcmp(name, "al")==0 ){
+        return true;
+    }else if (strcmp(name, "dl")==0 ){
         return true;
     }
     return false ;
@@ -260,6 +264,33 @@ asm_line asm_parse_line(asm_parser *p) {
     }
     return line;
 }
+asm_line asm_parse_data(asm_parser *p) {
+    asm_line line = {0};
+    line.is_data = 1;
+    line.data_size = 0;
+    asm_token first = p->tokens[p->pos];
+    if (strcmp(first.txt, "times") == 0) {
+        p->pos++;
+        int rep = p->tokens[p->pos].val;
+        p->pos++;
+        p->pos++;
+        int val = p->tokens[p->pos].val;
+        p->pos++;
+        for (int i = 0; i < rep && line.data_size < 256; i++) {
+            line.data_bytes[line.data_size++] = (unsigned char)val;}
+        return line;}
+    p->pos++;
+    while (p->tokens[p->pos].type != ASM_TOKEN_NEWLINE && p->tokens[p->pos].type != ASM_TOKEN_EOF) {
+        if (p->tokens[p->pos].type == ASM_TOKEN_NUMBER) {
+            if (line.data_size < 256)
+                line.data_bytes[line.data_size++] = (unsigned char)p->tokens[p->pos].val;
+            p->pos++;
+        } else if (p->tokens[p->pos].type == ASM_TOKEN_COMMA) {
+            p->pos++;
+        } else {
+            p->pos++;}}
+    return line;
+}
 
 asm_line *asm_parse_program(asm_parser *p, int *out_count) {
     asm_line *lines = malloc(sizeof(asm_line) * 1024);
@@ -275,10 +306,16 @@ asm_line *asm_parse_program(asm_parser *p, int *out_count) {
             p->pos++;
             continue;
         }//bs
-        if (strcmp(p->tokens[p->pos].txt, "BITS") == 0 ||
-    strcmp(p->tokens[p->pos].txt, "org") == 0 ||
-    strcmp(p->tokens[p->pos].txt, "global") == 0 ||
-    strcmp(p->tokens[p->pos].txt, "section") == 0) {
+        if (strcmp(p->tokens[p->pos].txt, "BITS") == 0 ||strcmp(p->tokens[p->pos].txt, "org") == 0 ||strcmp(p->tokens[p->pos].txt, "global") == 0 ||strcmp(p->tokens[p->pos].txt, "section") == 0) {
+            while (p->tokens[p->pos].type != ASM_TOKEN_NEWLINE && p->tokens[p->pos].type != ASM_TOKEN_EOF) {p->pos++;}
+            continue;}
+        if (p->tokens[p->pos].type == ASM_TOKEN_IDENTIFIER &&
+            (strcmp(p->tokens[p->pos].txt, "db") == 0 || strcmp(p->tokens[p->pos].txt, "times") == 0)) {
+            lines[count] = asm_parse_data(p);
+            count++;
+            if (p->tokens[p->pos].type == ASM_TOKEN_NEWLINE) {p->pos++;}
+            continue;}
+        if (p->tokens[p->pos].type == ASM_TOKEN_IDENTIFIER &&(strcmp(p->tokens[p->pos].txt, "db") == 0 || strcmp(p->tokens[p->pos].txt, "times") == 0)) {
             while (p->tokens[p->pos].type != ASM_TOKEN_NEWLINE && p->tokens[p->pos].type != ASM_TOKEN_EOF) {p->pos++;}
             continue;}
         lines[count] = asm_parse_line(p);
@@ -290,6 +327,7 @@ asm_line *asm_parse_program(asm_parser *p, int *out_count) {
     *out_count = count;
     return lines;
 }
+
 typedef struct {
     char name[32];
     long address;
@@ -301,8 +339,14 @@ int instruction_size(instruction instr) {
     if (strcmp(m, "syscall") == 0) return 2;
     if (strcmp(m, "push") == 0) return 1;
     if (strcmp(m, "pop") == 0) return 1;
-    if (strcmp(m, "inc") == 0) return 3;
-    if (strcmp(m, "dec") == 0) return 3;
+    if (strcmp(m, "inc") == 0){
+        if (instr.op1.type==OPERAND_MEMORY) return 6; // FE 05 + disp32, its a mem inc not a reg one
+        return 3;
+    }
+    if (strcmp(m, "dec") == 0){
+        if (instr.op1.type==OPERAND_MEMORY) return 6;
+        return 3;
+    }
     if (strcmp(m, "div") == 0) return 3;
     if (strcmp(m, "add") == 0) return 3;
     if (strcmp(m, "sub") == 0) return 3;
@@ -391,6 +435,24 @@ int get_the_gun(register_id name) {
 long compute_rip_relative(label_entry *labels, int label_count,const char *label_name, long address_after_instruction) {
     long target = rv_label(labels, label_count, label_name);
     return target - address_after_instruction;}
+
+
+asm_line asm_parse_data(asm_parser *p);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,label_entry *labels, int label_count, long current_address) {
     if (instr.op2.type==OPERAND_NONE && instr.op1.type==OPERAND_NONE) {
         if (strcmp(instr.mnemonic, "ret") == 0) {
@@ -424,25 +486,53 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
                buf[*offset]=0x58+get_the_gun(instr.op1.reg);
                *offset+=1;
            }if (strcmp(instr.mnemonic, "inc") == 0) {
+               if (instr.op1.type==OPERAND_MEMORY){
+                   // inc [count] type shi, rip relative, FE /0
+                   long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 6);
+                   buf[*offset]=0xFE;
+                   *offset+=1;
+                   buf[*offset]=0x05;
+                   *offset+=1;
+                   buf[*offset]= disp & 0xFF;
+                   buf[*offset+1]= (disp >>8) & 0xFF;
+                   buf[*offset+2]= (disp >>16) & 0xFF;
+                   buf[*offset+3]= (disp >>24) & 0xFF;
+                   *offset+=4;
+               }else{
                buf[*offset]=0x48;
                *offset+=1;
                buf[*offset]=0xFF;
                *offset+=1;
-               buf[*offset]=0xC0 || get_the_gun(instr.op1.reg);
+               buf[*offset]=0xC0 | get_the_gun(instr.op1.reg);
                *offset+=1;
-           }if (strcmp(instr.mnemonic, "inc") == 0) {
+               }
+           }if (strcmp(instr.mnemonic, "dec") == 0) {
+               if (instr.op1.type==OPERAND_MEMORY){
+                   // dec [count], FE /1
+                   long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 6);
+                   buf[*offset]=0xFE;
+                   *offset+=1;
+                   buf[*offset]=0x0D;
+                   *offset+=1;
+                   buf[*offset]= disp & 0xFF;
+                   buf[*offset+1]= (disp >>8) & 0xFF;
+                   buf[*offset+2]= (disp >>16) & 0xFF;
+                   buf[*offset+3]= (disp >>24) & 0xFF;
+                   *offset+=4;
+               }else{
                buf[*offset]=0x48;
                *offset+=1;
                buf[*offset]=0xFF;
                *offset+=1;
-               buf[*offset]=0xC8 || get_the_gun(instr.op1.reg);
+               buf[*offset]=0xC8 | get_the_gun(instr.op1.reg);
                *offset+=1;
+               }
            }if (strcmp(instr.mnemonic, "div") == 0) {
                buf[*offset]=0x48;
                *offset+=1;
                buf[*offset]=0xF7;
                *offset+=1;
-               buf[*offset]=0xF0 || get_the_gun(instr.op1.reg);
+               buf[*offset]=0xF0 | get_the_gun(instr.op1.reg);
                *offset+=1;
            }
     }else {
@@ -451,7 +541,7 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
             *offset+=1;
             buf[*offset]=0xC7;
             *offset+=1;
-            buf[*offset]=0xC0 || get_the_gun(instr.op1.reg);
+            buf[*offset]=0xC0 | get_the_gun(instr.op1.reg);
             *offset+=1;
             size_t size = sizeof(long);
             for (int i = 0; i < size; i++) {
@@ -460,7 +550,7 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
             }
         }
     }
-}else {
+}else if (strcmp(instr.mnemonic, "lea") == 0) {
     unsigned char modrm = (instr.op1.reg << 3) | 0x05;
     long disp = compute_rip_relative(labels, label_count, instr.op2.label,current_address + 7);
     buf[*offset]= 0x48;
