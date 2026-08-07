@@ -115,7 +115,7 @@ void asm_parser_init(asm_parser *p, asm_token *tokens, int count) {
     p->count = count;
 }
 register_id register_from_name(char* name) {
-    if (strcmp(name, "raxregister_id")) {
+    if (strcmp(name, "raxregister_id")==0) {
         return REG_RAX;
     }else if (strcmp(name, "rbx")==0) {
         return REG_RBX;
@@ -129,7 +129,7 @@ register_id register_from_name(char* name) {
         return REG_RDI;
     }else if (strcmp(name, "rbp")==0){
         return REG_RDP;
-    }else if (strcmp(name, "rsp") ){
+    }else if (strcmp(name, "rsp")==0 ){
         return REG_RSP;
     }
 }
@@ -270,8 +270,9 @@ int instruction_size(instruction instr) {
     fprintf(stderr, "who tf is  '%s'\n", m);
 }
 label_entry* pass1(asm_line *lines,int line_count,int *lablecnt){
-    label_entry labels[64];
+    label_entry *labels = malloc(sizeof(label_entry) * 64);
     int label_count = 0;
+
     long current_offset = 0;
     for(int i = 0; i < line_count; i++){
         if (lines[i].is_label) {
@@ -532,10 +533,11 @@ void avengers_assemble() {
             binary_size += instruction_size(outp[i].instr);
     }
     unsigned char *buff = malloc(binary_size);
-    pass2(outp,outie,outpl,outie,buff);
+    pass2(outp,outie,outpl,s,buff);
     FILE *f = fopen("output.bin", "wb");
     fwrite(buff, 1, binary_size, f);
     fclose(f);
     free(buff);
+    free(outpl);
 
 }
