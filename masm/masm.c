@@ -525,6 +525,18 @@ void avengers_assemble() {
     fclose(file);
     asm_lexer lexi;
     asm_lexer_init(&lexi,content);
-    int token_count = 0;
-    token *tkr = tokenizer(&lex_luther, &token_count);
+    int token_count = 0,outie=0;
+    asm_token *tkri = tokenizer(&lexi, &token_count);
+    asm_parser parsi;
+    asm_parser_init(&parsi,tkri,token_count);
+    asm_line* outp=asm_parse_program(&parsi,&outie);
+    label_entry* outpl=pass1(outp,outie);
+    long binary_size = 0;
+    for (int i = 0; i < outie; i++) {
+        if (!outp[i].is_label)
+            binary_size += instruction_size(outp[i].instr);
+    }
+    unsigned char *buff = malloc(binary_size);
+    pass2(outp,outie,outpl,outie,&buff);
+
 }
