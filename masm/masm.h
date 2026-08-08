@@ -62,6 +62,7 @@ typedef struct {
     int is_data;
     unsigned char data_bytes[256];
     int data_size;
+    char data_label[32];
 } asm_line;
 void encoding();
 void avengers_assemble();

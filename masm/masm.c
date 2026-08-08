@@ -67,11 +67,24 @@ asm_token asm_next_token(asm_lexer *l) {
             buffer[i++] = l->source[l->position];
             l->position++;}
         buffer[i] = '\0';
-
         temp.type = ASM_TOKEN_IDENTIFIER;
         temp.txt = strdup(buffer);
         return temp;
-    }
+    }else if (s == '"') {
+        l->position++;
+        char buffer[256];
+        int i = 0;
+        while (l->source[l->position] != '\0' &&
+               l->source[l->position] != '"') {
+            if (i < 255)
+                buffer[i++] = l->source[l->position];
+            l->position++;}
+        buffer[i] = '\0';
+        if (l->source[l->position] == '"')
+            l->position++;
+        temp.type = ASM_TOKEN_STRING;
+        temp.txt = strdup(buffer);
+        return temp;}
     else if (isdigit((unsigned char)s))
     {
         char buffer[64];
@@ -285,6 +298,12 @@ asm_line asm_parse_data(asm_parser *p) {
             if (line.data_size < 256)
                 line.data_bytes[line.data_size++] = (unsigned char)p->tokens[p->pos].val;
             p->pos++;
+        }else if (p->tokens[p->pos].type == ASM_TOKEN_STRING) {
+            char *str = p->tokens[p->pos].txt;
+            for (int i = 0;str[i] != '\0' && line.data_size < 256;i++) {
+                line.data_bytes[line.data_size++] =
+                    (unsigned char)str[i];}
+            p->pos++;
         } else if (p->tokens[p->pos].type == ASM_TOKEN_COMMA) {
             p->pos++;
         } else {
@@ -308,6 +327,19 @@ asm_line *asm_parse_program(asm_parser *p, int *out_count) {
         }//bs
         if (strcmp(p->tokens[p->pos].txt, "BITS") == 0 ||strcmp(p->tokens[p->pos].txt, "org") == 0 ||strcmp(p->tokens[p->pos].txt, "global") == 0 ||strcmp(p->tokens[p->pos].txt, "section") == 0) {
             while (p->tokens[p->pos].type != ASM_TOKEN_NEWLINE && p->tokens[p->pos].type != ASM_TOKEN_EOF) {p->pos++;}
+            continue;}
+        if (p->tokens[p->pos].type == ASM_TOKEN_IDENTIFIER &&
+    p->tokens[p->pos + 1].type == ASM_TOKEN_IDENTIFIER &&
+    strcmp(p->tokens[p->pos + 1].txt, "db") == 0) {
+            char *label = p->tokens[p->pos].txt;
+            strcpy(lines[count].label_name, label);
+            lines[count].is_label = 1;
+            lines[count].is_data = 0;
+            count++;
+            p->pos++;
+            lines[count] = asm_parse_data(p);
+            count++;
+            if (p->tokens[p->pos].type == ASM_TOKEN_NEWLINE)p->pos++;
             continue;}
         if (p->tokens[p->pos].type == ASM_TOKEN_IDENTIFIER &&
             (strcmp(p->tokens[p->pos].txt, "db") == 0 || strcmp(p->tokens[p->pos].txt, "times") == 0)) {
@@ -375,17 +407,16 @@ int instruction_size(instruction instr) {
 label_entry* pass1(asm_line *lines,int line_count,int *lablecnt){
     label_entry *labels = malloc(sizeof(label_entry) * 64);
     int label_count = 0;
-
     long current_offset = 0;
-    for(int i = 0; i < line_count; i++){
+    for (int i = 0; i < line_count; i++) {
         if (lines[i].is_label) {
-            strcpy(labels[label_count].name, lines[i].label_name);
+            strcpy(labels[label_count].name,
+                   lines[i].label_name);
             labels[label_count].address = current_offset;
             label_count++;
-        } else {
-            current_offset += instruction_size(lines[i].instr);
-        }
-    }
+        } else if (lines[i].is_data) {
+            current_offset += lines[i].data_size;
+        } else {current_offset += instruction_size(lines[i].instr);}}
     *lablecnt = label_count;
     return labels;
 }
