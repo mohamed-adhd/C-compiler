@@ -21,6 +21,7 @@ typedef enum{
     ASM_TOKEN_NEWLINE,
     ASM_TOKEN_COLON,
     ASM_TOKEN_POINT,
+    ASM_TOKEN_STRING,
     ASM_TOKEN_EOF
 }asm_tokentype;
 typedef struct {
