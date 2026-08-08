@@ -561,12 +561,18 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         buf[*offset +6]= (disp >>24) &0xFF;
         *offset += 7;
     }if (strcmp(instr.mnemonic, "add") == 0) {
-        buf[*offset]=0x48;
-        *offset+=1;
-        buf[*offset]=0x01;
-        *offset+=1;
-        buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
-        *offset+=1;
+        if (instr.op2.type == OPERAND_IMMEDIATE) {
+            buf[*offset]     = 0x48;
+            buf[*offset + 1] = 0x83;
+            buf[*offset + 2] = 0xC0 | get_the_gun(instr.op1.reg);
+            buf[*offset + 3] = (unsigned char)instr.op2.im;
+            *offset += 4;
+        } else {
+            buf[*offset]=0x48; *offset+=1;
+            buf[*offset]=0x01; *offset+=1;
+            buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
+            *offset+=1;
+        }
     }
     if (strcmp(instr.mnemonic, "sub") == 0) {
         buf[*offset]=0x48;
