@@ -33,16 +33,17 @@ void codegen_program(astnode *program, FILE *out) {
     "    ret\n";
     fprintf(out, "BITS 64\n");
     fprintf(out, "org 0x400078\n");
-    fprintf(out, "section .data\n");
-    fprintf(out, "count: db 0\n");
-    fprintf(out, "itoa_buffer: times 12 db 0\n");
-    fprintf(out, "itoa_len: db 0\n");
-    if (program->function->body->type == NODE_PRINT &&program->function->body->expr->type == NODE_STRING) {fprintf(out, "str0 db \"%s\"\n",program->function->body->expr->string);}
     fprintf(out, "\nsection .text\n");
     codegen_function(program->function, out);
 
     int nitoa = (program->function->body->type == NODE_PRINT &&(program->function->body->expr->type == NODE_CONSTANT ||program->function->body->expr->type == NODE_BINARY_OP));
     if (nitoa) {fprintf(out, "%s", ITOA_HELPER);}
+
+    fprintf(out, "section .data\n");
+    fprintf(out, "count: db 0\n");
+    fprintf(out, "itoa_buffer: times 12 db 0\n");
+    fprintf(out, "itoa_len: db 0\n");
+    if (program->function->body->type == NODE_PRINT &&program->function->body->expr->type == NODE_STRING) {fprintf(out, "str0 db \"%s\"\n",program->function->body->expr->string);}
 }
 void codegen_function(astnode *function, FILE *out) {
     (void)function;

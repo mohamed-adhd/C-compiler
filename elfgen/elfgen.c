@@ -73,8 +73,8 @@ void generate() {
     write_u64(offset, 72, 120);
     write_u64(offset, 80, 0x400000+120);
     write_u64(offset, 88, 0x400000+120);
-    write_u64(offset,96,file_size + 120);
-    write_u64(offset,104,file_size + 120);
+    write_u64(offset,96,file_size);
+    write_u64(offset,104,file_size);
     write_u64(offset, 112, 0x1000);
     uint8_t *final = (uint8_t *) malloc(120+file_size);
     if (!final) {
