@@ -17,7 +17,6 @@ static astnode *new_node(nodetp type) {
     }
     return node;
 }
-
 astnode *parse_program(paarser *p) {
     astnode *node = new_node(NODE_PROGRAM);
     node->function=parse_function(p);
@@ -26,9 +25,7 @@ astnode *parse_program(paarser *p) {
 astnode *parse_function(paarser *p) {
     astnode *node = new_node(NODE_FUNCTION);
     while (p->pos + 2 < p->count &&
-           !((p->tokens[p->pos].type == TOKEN_INT||p->tokens[p->pos].type == TOKEN_VOID) &&
-             p->tokens[p->pos + 1].type == TOKEN_IDENTIFIER &&
-             p->tokens[p->pos + 2].type == TOKEN_LPAREN)) {
+           !((p->tokens[p->pos].type == TOKEN_INT||p->tokens[p->pos].type == TOKEN_VOID) &&p->tokens[p->pos + 1].type == TOKEN_IDENTIFIER &&p->tokens[p->pos + 2].type == TOKEN_LPAREN)) {
         p->pos++;
     }
     if (p->pos + 1 < p->count) {
@@ -77,14 +74,20 @@ astnode *parse_statement(paarser *p) {
 }
 
 astnode *parse_factor(paarser *p) {
-    astnode *node = new_node(NODE_CONSTANT);
+    astnode *node;
     if (p->tokens[p->pos].type == TOKEN_NUMBER) {
+        node = new_node(NODE_CONSTANT);
         node->value = p->tokens[p->pos].val;
         p->pos++;
         return node;
     }
-    fprintf(stderr, "Expected a number nigga \n");
-    free(node);
+    if (p->tokens[p->pos].type == TOKEN_STRING) {
+        node = new_node(NODE_STRING);
+        node->string = p->tokens[p->pos].txt;
+        p->pos++;
+        return node;
+    }
+    fprintf(stderr, "factor crashed gang\n");
     exit(1);
 }
 

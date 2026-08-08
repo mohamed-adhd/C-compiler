@@ -20,7 +20,8 @@ typedef enum{
     TOKEN_MOD,
     TOKEN_COL,
     TOKEN_PRINT,
-    TOKEN_EOF
+    TOKEN_EOF,
+    TOKEN_STRING
 }tokentype;
 
 

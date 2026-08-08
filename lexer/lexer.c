@@ -52,15 +52,31 @@ static char *copy_text(const char *start, size_t length) {
 
 token next_token(lexer *l) {
     skip_whitespace(l);
-
     token temp = {0};
     char s=l->source[l->position];
     if (s == '\0') {
         temp.type = TOKEN_EOF;
         return temp;
     }
-
-    if (s==';'||s=='('||s==')'||s=='{'||s=='}'||s=='+'||s=='-'||s=='*'||s=='/'||s==','||s=='%'||s=='"') {
+    if (s == '"') {
+        l->position++;
+        size_t start = l->position;
+        while (l->source[l->position] != '\0' &&
+               l->source[l->position] != '"') {
+            l->position++;
+               }
+        if (l->source[l->position] == '\0') {
+            fprintf(stderr, "fucked up the string system\n");
+            temp.type = TOKEN_EOF;
+            return temp;
+        }
+        size_t length = l->position - start;
+        temp.txt = copy_text(l->source + start, length);
+        temp.type = TOKEN_STRING;
+        l->position++;
+        return temp;
+    }
+    if (s==';'||s=='('||s==')'||s=='{'||s=='}'||s=='+'||s=='-'||s=='*'||s=='/'||s==','||s=='%') {
         switch (s) {
             case ';':
                 temp.type=TOKEN_SEMICOLON;
@@ -94,9 +110,6 @@ token next_token(lexer *l) {
                 break;
             case '%':
                 temp.type=TOKEN_MOD;
-                break;
-            case '"':
-                temp.type=TOKEN_COL;
                 break;
         }
         l->position++;
