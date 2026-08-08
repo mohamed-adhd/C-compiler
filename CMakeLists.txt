@@ -34,4 +34,4 @@ add_executable(C_compiler
         elfgen/elfgen.h
         masm/masm.c
         masm/masm.h
-        tests/test3.c)
+)

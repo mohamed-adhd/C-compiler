@@ -160,38 +160,43 @@ void asm_parser_init(asm_parser *p, asm_token *tokens, int count) {
 }
 register_id register_from_name(char *name)
 {
-    if (strcmp(name, "rax") == 0)
+    if (strcmp(name, "rax") == 0 || strcmp(name, "eax") == 0 || strcmp(name, "al") == 0)
         return REG_RAX;
-    if (strcmp(name, "rbx") == 0)
+    if (strcmp(name, "rbx") == 0 || strcmp(name, "ebx") == 0 || strcmp(name, "bl") == 0)
         return REG_RBX;
-
-
-
-
-
-
-    if (strcmp(name, "rcx") == 0)
+    if (strcmp(name, "rcx") == 0 || strcmp(name, "ecx") == 0 || strcmp(name, "cl") == 0)
         return REG_RCX;
-    if (strcmp(name, "rdx") == 0)
+    if (strcmp(name, "rdx") == 0 || strcmp(name, "edx") == 0 || strcmp(name, "dl") == 0)
         return REG_RDX;
-    if (strcmp(name, "rsi") == 0)
+    if (strcmp(name, "rsi") == 0 || strcmp(name, "esi") == 0 || strcmp(name, "sil") == 0)
         return REG_RSI;
-    if (strcmp(name, "rdi") == 0)
+    if (strcmp(name, "rdi") == 0 || strcmp(name, "edi") == 0 || strcmp(name, "dil") == 0)
         return REG_RDI;
-    if (strcmp(name, "rbp") == 0)
+    if (strcmp(name, "rbp") == 0 || strcmp(name, "ebp") == 0 || strcmp(name, "bpl") == 0)
         return REG_RBP;
-    if (strcmp(name, "rsp") == 0)
+    if (strcmp(name, "rsp") == 0 || strcmp(name, "esp") == 0 || strcmp(name, "spl") == 0)
         return REG_RSP;
     fprintf(stderr, "who tf is '%s'\n", name);
     exit(1);
 }
 bool is_register_name(char *name)
 {
-    return strcmp(name, "rax") == 0 ||strcmp(name, "rbx") == 0 ||strcmp(name, "rcx") == 0 ||strcmp(name, "rdx") == 0 ||strcmp(name, "rsi") == 0 ||strcmp(name, "rdi") == 0 ||strcmp(name, "rbp") == 0 ||strcmp(name, "rsp") == 0;
+    return strcmp(name, "rax") == 0 ||strcmp(name, "rbx") == 0 ||strcmp(name, "rcx") == 0 ||strcmp(name, "rdx") == 0 ||
+           strcmp(name, "rsi") == 0 ||strcmp(name, "rdi") == 0 ||strcmp(name, "rbp") == 0 ||strcmp(name, "rsp") == 0 ||
+           strcmp(name, "eax") == 0 ||strcmp(name, "ebx") == 0 ||strcmp(name, "ecx") == 0 ||strcmp(name, "edx") == 0 ||
+           strcmp(name, "esi") == 0 ||strcmp(name, "edi") == 0 ||strcmp(name, "ebp") == 0 ||strcmp(name, "esp") == 0 ||
+           strcmp(name, "al") == 0  ||strcmp(name, "bl") == 0  ||strcmp(name, "cl") == 0  ||strcmp(name, "dl") == 0  ||
+           strcmp(name, "sil") == 0 ||strcmp(name, "dil") == 0 ||strcmp(name, "bpl") == 0 ||strcmp(name, "spl") == 0;
 }
 operand asm_parse_operand(asm_parser *p) {
     operand op = {0};
     asm_token t = p->tokens[p->pos];
+    if (t.type == ASM_TOKEN_IDENTIFIER && t.txt != NULL &&
+        (strcmp(t.txt, "byte") == 0 || strcmp(t.txt, "word") == 0 ||
+         strcmp(t.txt, "dword") == 0 || strcmp(t.txt, "qword") == 0)) {
+        p->pos++;
+        t = p->tokens[p->pos];
+    }
     if (t.type == ASM_TOKEN_NUMBER) {
         op.type = OPERAND_IMMEDIATE;
         op.im = t.val;
@@ -202,9 +207,14 @@ operand asm_parse_operand(asm_parser *p) {
         p->pos++;
         asm_token inner = p->tokens[p->pos];
         op.type = OPERAND_MEMORY;
-        strcpy(op.label, inner.txt);
+        if (is_register_name(inner.txt)) {
+            op.reg = register_from_name(inner.txt);
+            op.im = 1; // started as a c compiler , now its , whatever the fuck this is
+        } else {
+            strcpy(op.label, inner.txt);
+        }
         p->pos++;
-        p->pos++; // started as a c compiler , now its , whatever the fuck this is
+        p->pos++;
         return op;
     }
     if (t.type == ASM_TOKEN_IDENTIFIER) {
@@ -239,19 +249,6 @@ asm_line asm_parse_line(asm_parser *p) {
     }
     line.is_label = 0;
     strcpy(line.instr.mnemonic, first.txt);
-    if (strcmp(line.instr.mnemonic,"mov")==0 ||
-    strcmp(line.instr.mnemonic,"add")==0 ||
-    strcmp(line.instr.mnemonic,"sub")==0 ||
-    strcmp(line.instr.mnemonic,"movzx")==0)
-    {
-        if(strcmp(p->tokens[p->pos].txt,"byte")==0 ||
-           strcmp(p->tokens[p->pos].txt,"word")==0 ||
-           strcmp(p->tokens[p->pos].txt,"dword")==0 ||
-           strcmp(p->tokens[p->pos].txt,"qword")==0)
-        {
-            p->pos++;
-        }
-    }
     p->pos++;
     if (p->tokens[p->pos].type == ASM_TOKEN_NEWLINE ||p->tokens[p->pos].type == ASM_TOKEN_EOF) {
         line.instr.op1.type = OPERAND_NONE;
@@ -315,7 +312,8 @@ asm_line *asm_parse_program(asm_parser *p, int *out_count) {
             p->pos++;
             continue;
         }//bs
-        if (strcmp(p->tokens[p->pos].txt, "BITS") == 0 ||strcmp(p->tokens[p->pos].txt, "org") == 0 ||strcmp(p->tokens[p->pos].txt, "global") == 0 ||strcmp(p->tokens[p->pos].txt, "section") == 0) {
+        if (p->tokens[p->pos].txt != NULL &&
+            (strcmp(p->tokens[p->pos].txt, "BITS") == 0 ||strcmp(p->tokens[p->pos].txt, "org") == 0 ||strcmp(p->tokens[p->pos].txt, "global") == 0 ||strcmp(p->tokens[p->pos].txt, "section") == 0)) {
             while (p->tokens[p->pos].type != ASM_TOKEN_NEWLINE && p->tokens[p->pos].type != ASM_TOKEN_EOF) {p->pos++;}
             continue;}
         if (p->tokens[p->pos].type == ASM_TOKEN_IDENTIFIER &&
@@ -375,6 +373,8 @@ int instruction_size(instruction instr) {
     if (strcmp(m, "xor") == 0) return 3;
     if (strcmp(m, "cmp") == 0) return 3;
     if (strcmp(m, "mov") == 0) {
+        if (instr.op1.type == OPERAND_MEMORY && instr.op2.type == OPERAND_REGISTER && instr.op1.im == 1)
+            return 2;
         if (instr.op2.type == OPERAND_IMMEDIATE && instr.op1.type == OPERAND_REGISTER)
             return 7;
         if (instr.op2.type == OPERAND_REGISTER && instr.op1.type == OPERAND_REGISTER)
@@ -382,6 +382,8 @@ int instruction_size(instruction instr) {
         if (instr.op1.type == OPERAND_MEMORY && instr.op2.type == OPERAND_IMMEDIATE)
             return 11;
         if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_MEMORY)
+            return 7;
+        if (instr.op1.type == OPERAND_MEMORY && instr.op2.type == OPERAND_REGISTER)
             return 7;
         fprintf(stderr, "instruction_size is kinda wrong twin\n");
         exit(1);
@@ -412,23 +414,6 @@ label_entry* pass1(asm_line *lines,int line_count,int *lablecnt){
     *lablecnt = label_count;
     return labels;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 long rv_label(label_entry *labels, int lt, const char *name) {
     for (int i = 0; i < lt; i++) {
         if (strcmp(labels[i].name, name) == 0) {
@@ -462,20 +447,6 @@ long compute_rip_relative(label_entry *labels, int label_count,const char *label
 
 asm_line asm_parse_data(asm_parser *p);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,label_entry *labels, int label_count, long current_address) {
     if (instr.op2.type==OPERAND_NONE && instr.op1.type==OPERAND_NONE) {
         if (strcmp(instr.mnemonic, "ret") == 0) {
@@ -495,101 +466,101 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
             return;
         }
     }else if (instr.op2.type==OPERAND_NONE){
-       if (instr.op1.im!=-5098){
-           if (strcmp(instr.mnemonic, "push") == 0) {
-               buf[*offset]=0x50+get_the_gun(instr.op1.reg);
-               *offset+=1;
-           }
-           if (strcmp(instr.mnemonic, "call") == 0) {
-               long target = rv_label(labels, label_count, instr.op1.label);
-               int32_t rel = (int32_t)(target - (current_address + 5));
+        if (instr.op1.im!=-5098){
+            if (strcmp(instr.mnemonic, "push") == 0) {
+                buf[*offset]=0x50+get_the_gun(instr.op1.reg);
+                *offset+=1;
+            }
+            if (strcmp(instr.mnemonic, "call") == 0) {
+                long target = rv_label(labels, label_count, instr.op1.label);
+                int32_t rel = (int32_t)(target - (current_address + 5));
 
-               buf[*offset] = 0xE8;
-               buf[*offset + 1] = rel & 0xFF;
-               buf[*offset + 2] = (rel >> 8) & 0xFF;
-               buf[*offset + 3] = (rel >> 16) & 0xFF;
-               buf[*offset + 4] = (rel >> 24) & 0xFF;
+                buf[*offset] = 0xE8;
+                buf[*offset + 1] = rel & 0xFF;
+                buf[*offset + 2] = (rel >> 8) & 0xFF;
+                buf[*offset + 3] = (rel >> 16) & 0xFF;
+                buf[*offset + 4] = (rel >> 24) & 0xFF;
 
-               *offset += 5;
-               return;
-           }
-           if (strcmp(instr.mnemonic, "pop") == 0) {
-               buf[*offset]=0x58+get_the_gun(instr.op1.reg);
-               *offset+=1;
-           }if (strcmp(instr.mnemonic, "inc") == 0) {
-               if (instr.op1.type==OPERAND_MEMORY){
-                   long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 6);
-                   buf[*offset]=0xFE;
-                   *offset+=1;
-                   buf[*offset]=0x05;
-                   *offset+=1;
-                   buf[*offset]= disp & 0xFF;
-                   buf[*offset+1]= (disp >>8) & 0xFF;
-                   buf[*offset+2]= (disp >>16) & 0xFF;
-                   buf[*offset+3]= (disp >>24) & 0xFF;
-                   *offset+=4;
-               }else{
-               buf[*offset]=0x48;
-               *offset+=1;
-               buf[*offset]=0xFF;
-               *offset+=1;
-               buf[*offset]=0xC0 | get_the_gun(instr.op1.reg);
-               *offset+=1;
-               }
-           }if (strcmp(instr.mnemonic, "dec") == 0) {
-               if (instr.op1.type==OPERAND_MEMORY){
-                   long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 6);
-                   buf[*offset]=0xFE;
-                   *offset+=1;
-                   buf[*offset]=0x0D;
-                   *offset+=1;
-                   buf[*offset]= disp & 0xFF;
-                   buf[*offset+1]= (disp >>8) & 0xFF;
-                   buf[*offset+2]= (disp >>16) & 0xFF;
-                   buf[*offset+3]= (disp >>24) & 0xFF;
-                   *offset+=4;
-               }else{
-               buf[*offset]=0x48;
-               *offset+=1;
-               buf[*offset]=0xFF;
-               *offset+=1;
-               buf[*offset]=0xC8 | get_the_gun(instr.op1.reg);
-               *offset+=1;
-               }
-           }if (strcmp(instr.mnemonic, "div") == 0) {
-               buf[*offset]=0x48;
-               *offset+=1;
-               buf[*offset]=0xF7;
-               *offset+=1;
-               buf[*offset]=0xF0 | get_the_gun(instr.op1.reg);
-               *offset+=1;
-           }
-    }else {
-        if (strcmp(instr.mnemonic, "mov") == 0) {
-            buf[*offset]= 0x48;
-            buf[*offset + 1] = 0xC7;
-            buf[*offset + 2] = 0xC0 | get_the_gun(instr.op1.reg);
-            uint32_t imm = (uint32_t)instr.op2.im;
-            buf[*offset + 3] = imm & 0xFF;
-            buf[*offset + 4] = (imm >> 8) & 0xFF;
-            buf[*offset + 5] = (imm >> 16) & 0xFF;
-            buf[*offset + 6] = (imm >> 24) & 0xFF;
+                *offset += 5;
+                return;
+            }
+            if (strcmp(instr.mnemonic, "pop") == 0) {
+                buf[*offset]=0x58+get_the_gun(instr.op1.reg);
+                *offset+=1;
+            }if (strcmp(instr.mnemonic, "inc") == 0) {
+                if (instr.op1.type==OPERAND_MEMORY){
+                    long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 6);
+                    buf[*offset]=0xFE;
+                    *offset+=1;
+                    buf[*offset]=0x05;
+                    *offset+=1;
+                    buf[*offset]= disp & 0xFF;
+                    buf[*offset+1]= (disp >>8) & 0xFF;
+                    buf[*offset+2]= (disp >>16) & 0xFF;
+                    buf[*offset+3]= (disp >>24) & 0xFF;
+                    *offset+=4;
+                }else{
+                    buf[*offset]=0x48;
+                    *offset+=1;
+                    buf[*offset]=0xFF;
+                    *offset+=1;
+                    buf[*offset]=0xC0 | get_the_gun(instr.op1.reg);
+                    *offset+=1;
+                }
+            }if (strcmp(instr.mnemonic, "dec") == 0) {
+                if (instr.op1.type==OPERAND_MEMORY){
+                    long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 6);
+                    buf[*offset]=0xFE;
+                    *offset+=1;
+                    buf[*offset]=0x0D;
+                    *offset+=1;
+                    buf[*offset]= disp & 0xFF;
+                    buf[*offset+1]= (disp >>8) & 0xFF;
+                    buf[*offset+2]= (disp >>16) & 0xFF;
+                    buf[*offset+3]= (disp >>24) & 0xFF;
+                    *offset+=4;
+                }else{
+                    buf[*offset]=0x48;
+                    *offset+=1;
+                    buf[*offset]=0xFF;
+                    *offset+=1;
+                    buf[*offset]=0xC8 | get_the_gun(instr.op1.reg);
+                    *offset+=1;
+                }
+            }if (strcmp(instr.mnemonic, "div") == 0) {
+                buf[*offset]=0x48;
+                *offset+=1;
+                buf[*offset]=0xF7;
+                *offset+=1;
+                buf[*offset]=0xF0 | get_the_gun(instr.op1.reg);
+                *offset+=1;
+            }
+        }else {
+            if (strcmp(instr.mnemonic, "mov") == 0) {
+                buf[*offset]= 0x48;
+                buf[*offset + 1] = 0xC7;
+                buf[*offset + 2] = 0xC0 | get_the_gun(instr.op1.reg);
+                uint32_t imm = (uint32_t)instr.op2.im;
+                buf[*offset + 3] = imm & 0xFF;
+                buf[*offset + 4] = (imm >> 8) & 0xFF;
+                buf[*offset + 5] = (imm >> 16) & 0xFF;
+                buf[*offset + 6] = (imm >> 24) & 0xFF;
 
-            *offset += 7;
+                *offset += 7;
+            }
         }
-    }
-}else if (strcmp(instr.mnemonic, "lea") == 0) {
-    unsigned char modrm = (instr.op1.reg << 3) | 0x05;
-    long disp = compute_rip_relative(labels, label_count, instr.op2.label,current_address + 7);
-    buf[*offset]= 0x48;
-    buf[*offset +1]=0x8D;
-    buf[*offset +2] =modrm;
-    buf[*offset +3]= disp & 0xFF;
-    buf[*offset +4]= (disp >>8) &0xFF;
-    buf[*offset +5]= (disp >>16) &0xFF;
-    buf[*offset +6]= (disp >>24) &0xFF;
-    *offset += 7;
-}if (strcmp(instr.mnemonic, "add") == 0) {
+    }else if (strcmp(instr.mnemonic, "lea") == 0) {
+        unsigned char modrm = (instr.op1.reg << 3) | 0x05;
+        long disp = compute_rip_relative(labels, label_count, instr.op2.label,current_address + 7);
+        buf[*offset]= 0x48;
+        buf[*offset +1]=0x8D;
+        buf[*offset +2] =modrm;
+        buf[*offset +3]= disp & 0xFF;
+        buf[*offset +4]= (disp >>8) &0xFF;
+        buf[*offset +5]= (disp >>16) &0xFF;
+        buf[*offset +6]= (disp >>24) &0xFF;
+        *offset += 7;
+    }if (strcmp(instr.mnemonic, "add") == 0) {
         buf[*offset]=0x48;
         *offset+=1;
         buf[*offset]=0x01;
@@ -632,14 +603,6 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
             buf[*offset + 6] = (imm >> 24) & 0xFF;
             *offset += 7;
         }
-
-
-
-
-
-
-
-
         else if (instr.op1.type ==OPERAND_MEMORY && instr.op2.type==OPERAND_IMMEDIATE) {
             unsigned char modrm = 0x05;
             long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 11);
@@ -674,6 +637,23 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
             *offset+=1;
             buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
             *offset+=3;
+        }else if (instr.op1.type == OPERAND_MEMORY && instr.op2.type == OPERAND_REGISTER) {
+            if (instr.op1.im == 1) {
+                buf[*offset]     = 0x88;
+                buf[*offset + 1] = (get_the_gun(instr.op2.reg) << 3) | get_the_gun(instr.op1.reg);
+                *offset += 2;
+            } else {
+                unsigned char modrm = (instr.op2.reg << 3) | 0x05;
+                long disp = compute_rip_relative(labels, label_count, instr.op1.label, current_address + 7);
+                buf[*offset]     = 0x48;
+                buf[*offset + 1] = 0x89;
+                buf[*offset + 2] = modrm;
+                buf[*offset + 3] = disp & 0xFF;
+                buf[*offset + 4] = (disp >> 8) & 0xFF;
+                buf[*offset + 5] = (disp >> 16) & 0xFF;
+                buf[*offset + 6] = (disp >> 24) & 0xFF;
+                *offset+=7;
+            }
         }
     }
     if (strcmp(instr.mnemonic, "jne") == 0 || strcmp(instr.mnemonic, "jnz") == 0) {
@@ -698,9 +678,6 @@ void pass2(asm_line *lines,int line_count,label_entry *labels,int label_count,un
             offset += lines[i].data_size;
             continue;
         }asm_encode_instruction(lines[i].instr,output,&offset,labels,label_count,offset);}}
-
-
-
 
 void avengers_assemble() {
     FILE *file = fopen("output.s", "r");

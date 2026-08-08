@@ -1,4 +1,4 @@
 
 int main() {
-    print("nigga i m alive");
+    print(5);
 }
