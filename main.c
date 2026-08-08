@@ -5,7 +5,7 @@
 #include "parse.h"
 #include "token.h"
 #include "masm/masm.h"
-
+#include "elfgen.h"
 int main(int argc, char *argv[]) {
 
     const char *path = argc > 1 ? argv[1] : "../tests/test2.c";
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     free_tokens(tkr);
     free(content);
     avengers_assemble();
+    generate();
     system("./typeshi");
     return 0;
-
 }

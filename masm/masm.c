@@ -621,7 +621,26 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
         buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
         *offset+=1;}
     if (strcmp(instr.mnemonic, "mov") == 0) {
-        if (instr.op1.type ==OPERAND_MEMORY && instr.op2.type==OPERAND_IMMEDIATE) {
+        if (instr.op1.type == OPERAND_REGISTER && instr.op2.type == OPERAND_IMMEDIATE) {
+            buf[*offset]     = 0x48;
+            buf[*offset + 1] = 0xC7;
+            buf[*offset + 2] = 0xC0 | get_the_gun(instr.op1.reg);
+            uint32_t imm = (uint32_t)instr.op2.im;
+            buf[*offset + 3] = imm & 0xFF;
+            buf[*offset + 4] = (imm >> 8) & 0xFF;
+            buf[*offset + 5] = (imm >> 16) & 0xFF;
+            buf[*offset + 6] = (imm >> 24) & 0xFF;
+            *offset += 7;
+        }
+
+
+
+
+
+
+
+
+        else if (instr.op1.type ==OPERAND_MEMORY && instr.op2.type==OPERAND_IMMEDIATE) {
             unsigned char modrm = 0x05;
             long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 11);
             long imm = instr.op2.im;
