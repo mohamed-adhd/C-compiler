@@ -7,6 +7,7 @@
 
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "lexer.h"
@@ -157,48 +158,36 @@ void asm_parser_init(asm_parser *p, asm_token *tokens, int count) {
     p->pos = 0;
     p->count = count;
 }
-register_id register_from_name(char* name) {
-    if (strcmp(name, "rax")==0|| strcmp(name, "al")==0) {
+register_id register_from_name(char *name)
+{
+    if (strcmp(name, "rax") == 0)
         return REG_RAX;
-    }else if (strcmp(name, "rbx")==0) {
+    if (strcmp(name, "rbx") == 0)
         return REG_RBX;
-    }else if (strcmp(name, "rcx")==0){
+
+
+
+
+
+
+    if (strcmp(name, "rcx") == 0)
         return REG_RCX;
-    }else if (strcmp(name, "rdx")==0|| strcmp(name, "dl")==0){
+    if (strcmp(name, "rdx") == 0)
         return REG_RDX;
-    }else if (strcmp(name, "rsi")==0){
+    if (strcmp(name, "rsi") == 0)
         return REG_RSI;
-    }else if (strcmp(name, "rdi")==0){
+    if (strcmp(name, "rdi") == 0)
         return REG_RDI;
-    }else if (strcmp(name, "rbp")==0){
-        return REG_RDP;
-    }else if (strcmp(name, "rsp")==0 ){
+    if (strcmp(name, "rbp") == 0)
+        return REG_RBP;
+    if (strcmp(name, "rsp") == 0)
         return REG_RSP;
-    }
+    fprintf(stderr, "who tf is '%s'\n", name);
+    exit(1);
 }
-bool is_register_name(char* name) {
-    if (strcmp(name, "rax")==0) {
-        return true;
-    }else if (strcmp(name, "rbx")==0) {
-        return true;
-    }else if (strcmp(name, "rcx")==0){
-        return true;
-    }else if (strcmp(name, "rdx")==0 ){
-        return true;
-    }else if (strcmp(name, "rsi")==0 ){
-        return true;
-    }else if (strcmp(name, "rdi")==0 ){
-        return true;
-    }else if (strcmp(name, "rbp")==0 ){
-        return true;
-    }else if (strcmp(name, "rsp")==0 ){
-        return true;
-    }else if (strcmp(name, "al")==0 ){
-        return true;
-    }else if (strcmp(name, "dl")==0 ){
-        return true;
-    }
-    return false ;
+bool is_register_name(char *name)
+{
+    return strcmp(name, "rax") == 0 ||strcmp(name, "rbx") == 0 ||strcmp(name, "rcx") == 0 ||strcmp(name, "rdx") == 0 ||strcmp(name, "rsi") == 0 ||strcmp(name, "rdi") == 0 ||strcmp(name, "rbp") == 0 ||strcmp(name, "rsp") == 0;
 }
 operand asm_parse_operand(asm_parser *p) {
     operand op = {0};
@@ -252,7 +241,8 @@ asm_line asm_parse_line(asm_parser *p) {
     strcpy(line.instr.mnemonic, first.txt);
     if (strcmp(line.instr.mnemonic,"mov")==0 ||
     strcmp(line.instr.mnemonic,"add")==0 ||
-    strcmp(line.instr.mnemonic,"sub")==0)
+    strcmp(line.instr.mnemonic,"sub")==0 ||
+    strcmp(line.instr.mnemonic,"movzx")==0)
     {
         if(strcmp(p->tokens[p->pos].txt,"byte")==0 ||
            strcmp(p->tokens[p->pos].txt,"word")==0 ||
@@ -372,7 +362,7 @@ int instruction_size(instruction instr) {
     if (strcmp(m, "push") == 0) return 1;
     if (strcmp(m, "pop") == 0) return 1;
     if (strcmp(m, "inc") == 0){
-        if (instr.op1.type==OPERAND_MEMORY) return 6; // FE 05 + disp32, its a mem inc not a reg one
+        if (instr.op1.type==OPERAND_MEMORY) return 6;
         return 3;
     }
     if (strcmp(m, "dec") == 0){
@@ -403,6 +393,8 @@ int instruction_size(instruction instr) {
     if (strcmp(m, "jnz") == 0) return 6;
 
     fprintf(stderr, "who tf is  '%s'\n", m);
+    exit(1);
+    return 0;
 }
 label_entry* pass1(asm_line *lines,int line_count,int *lablecnt){
     label_entry *labels = malloc(sizeof(label_entry) * 64);
@@ -496,16 +488,11 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
             buf[*offset + 1] = 0x05;
             *offset += 2;
         }
-        if (strcmp(instr.mnemonic, "call") == 0) {
-            long ftg = rv_label(labels, label_count, instr.op1.label);
-            long res=ftg-(current_address+5);
-            buf[*offset]=0xEF;
-            *offset+=1;
-            buf[*offset]=res;
-        }
-        if (strcmp(instr.mnemonic, "mov") == 0) {
+
+        if (strcmp(instr.mnemonic, "leave") == 0) {
             buf[*offset]=0xC9;
             *offset+=1;
+            return;
         }
     }else if (instr.op2.type==OPERAND_NONE){
        if (instr.op1.im!=-5098){
@@ -513,12 +500,24 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
                buf[*offset]=0x50+get_the_gun(instr.op1.reg);
                *offset+=1;
            }
+           if (strcmp(instr.mnemonic, "call") == 0) {
+               long target = rv_label(labels, label_count, instr.op1.label);
+               int32_t rel = (int32_t)(target - (current_address + 5));
+
+               buf[*offset] = 0xE8;
+               buf[*offset + 1] = rel & 0xFF;
+               buf[*offset + 2] = (rel >> 8) & 0xFF;
+               buf[*offset + 3] = (rel >> 16) & 0xFF;
+               buf[*offset + 4] = (rel >> 24) & 0xFF;
+
+               *offset += 5;
+               return;
+           }
            if (strcmp(instr.mnemonic, "pop") == 0) {
                buf[*offset]=0x58+get_the_gun(instr.op1.reg);
                *offset+=1;
            }if (strcmp(instr.mnemonic, "inc") == 0) {
                if (instr.op1.type==OPERAND_MEMORY){
-                   // inc [count] type shi, rip relative, FE /0
                    long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 6);
                    buf[*offset]=0xFE;
                    *offset+=1;
@@ -539,7 +538,6 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
                }
            }if (strcmp(instr.mnemonic, "dec") == 0) {
                if (instr.op1.type==OPERAND_MEMORY){
-                   // dec [count], FE /1
                    long disp = compute_rip_relative(labels, label_count, instr.op1.label,current_address + 6);
                    buf[*offset]=0xFE;
                    *offset+=1;
@@ -568,17 +566,16 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
            }
     }else {
         if (strcmp(instr.mnemonic, "mov") == 0) {
-            buf[*offset]=0x48;
-            *offset+=1;
-            buf[*offset]=0xC7;
-            *offset+=1;
-            buf[*offset]=0xC0 | get_the_gun(instr.op1.reg);
-            *offset+=1;
-            size_t size = sizeof(long);
-            for (int i = 0; i < size; i++) {
-                buf[*offset + i] = (unsigned char)(instr.op1.im & 0xFF);
-                instr.op1.im >>= 8;
-            }
+            buf[*offset]= 0x48;
+            buf[*offset + 1] = 0xC7;
+            buf[*offset + 2] = 0xC0 | get_the_gun(instr.op1.reg);
+            uint32_t imm = (uint32_t)instr.op2.im;
+            buf[*offset + 3] = imm & 0xFF;
+            buf[*offset + 4] = (imm >> 8) & 0xFF;
+            buf[*offset + 5] = (imm >> 16) & 0xFF;
+            buf[*offset + 6] = (imm >> 24) & 0xFF;
+
+            *offset += 7;
         }
     }
 }else if (strcmp(instr.mnemonic, "lea") == 0) {
@@ -657,7 +654,7 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
             buf[*offset]=0x89;
             *offset+=1;
             buf[*offset]=0xC0 | (get_the_gun(instr.op2.reg)*8) | get_the_gun(instr.op1.reg);
-            *offset+=4;
+            *offset+=3;
         }
     }
     if (strcmp(instr.mnemonic, "jne") == 0 || strcmp(instr.mnemonic, "jnz") == 0) {
@@ -674,13 +671,14 @@ void asm_encode_instruction(instruction instr, unsigned char *buf, long *offset,
 }
 void pass2(asm_line *lines,int line_count,label_entry *labels,int label_count,unsigned char *output){
     long offset = 0;
-    for(int i=0;i<line_count;i++)
-    {
-        if(lines[i].is_label)continue;
-        asm_encode_instruction(lines[i].instr,output,&offset,labels,label_count,offset);
-    }
-}
-
+    for (int i = 0; i < line_count; i++) {
+        if (lines[i].is_label)
+            continue;
+        if (lines[i].is_data) {
+            memcpy(output + offset,lines[i].data_bytes,lines[i].data_size);
+            offset += lines[i].data_size;
+            continue;
+        }asm_encode_instruction(lines[i].instr,output,&offset,labels,label_count,offset);}}
 
 
 
@@ -715,7 +713,11 @@ void avengers_assemble() {
     printf("after pass 1\n");
     long binary_size = 0;
     for (int i = 0; i < outie; i++) {
-        if (!outp[i].is_label)
+        if (outp[i].is_label){
+            continue;}
+        if (outp[i].is_data)
+            binary_size += outp[i].data_size;
+        else
             binary_size += instruction_size(outp[i].instr);}
     unsigned char *buff = malloc(binary_size);
     pass2(outp,outie,outpl,s,buff);
